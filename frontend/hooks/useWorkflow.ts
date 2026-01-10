@@ -88,6 +88,7 @@ function useWorkflow() {
 
   const getWorkflowById = async (id: string) => {
     const data = await workflowRepository.findById(id);
+    console.log(JSON.parse(data.data))
     setWorkflow(JSON.parse(data.data));
   };
 

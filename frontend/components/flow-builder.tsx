@@ -491,11 +491,9 @@ export default function FlowBuilder({
       return;
     }
 
-    console.log(worlflowToEditId)
-
     if (worlflowToEditId) {
-      console.log("update")
-      await updateWorkflow({
+      console.log({
+        ...workflow,
         workflowId: worlflowToEditId,
         contextVariables: [],
         name: flowName || "",
@@ -504,7 +502,17 @@ export default function FlowBuilder({
           nodes: [...nodes],
           edges: [...edges],
         },
+      })
+      await updateWorkflow({
         ...workflow,
+        workflowId: worlflowToEditId,
+        contextVariables: [],
+        name: flowName || "",
+        envData: [...envData],
+        originalWorkflow: {
+          nodes: [...nodes],
+          edges: [...edges],
+        },
       });
     } else {
       const workflowCreated = await createWorkflow({

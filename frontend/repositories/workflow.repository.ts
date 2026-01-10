@@ -3,8 +3,13 @@ import db from "@/config/database";
 async function getAll() {
   const results = await (db as any).workflows.toArray();
   return results.map((item: { [key: string]: any }) => {
-    const data = JSON.parse(item.data);
-    return { id: item.id, name: data.name, data: JSON.parse(item.data) };
+    let data = item.data;
+    try {
+      data = JSON.parse(item.data);
+    } catch (error) {
+      console.log(error)
+    }
+    return { id: item.id, name: data.name, data };
   });
 }
 
@@ -15,6 +20,7 @@ async function findById(id: string) {
 }
 
 function update(id: string, data: { [key: string]: any }) {
+  console.log(id, data)
   return (db as any).workflows.update(id, data);
 }
 
