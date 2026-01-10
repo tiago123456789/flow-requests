@@ -62,6 +62,15 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
     }
   };
 
+  const getFlowToCurl = (): { data: { nodes: any; envData: any; }} => {
+    return {
+       data: {
+        nodes: selectedWorkflowForRun?.data?.nodes,
+        envData: selectedWorkflowForRun?.data?.envData
+       }
+    }
+  };
+
   useEffect(() => {
     getWorkflows();
     fetchPackages();
@@ -113,7 +122,7 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
               </td>
 
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <DropdownMenu dir="ltr">
+                <DropdownMenu dir="ltr" modal={false}>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline">Actions</Button>
                   </DropdownMenuTrigger>
@@ -169,7 +178,10 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Dialog open={isRunModalOpen} onOpenChange={setIsRunModalOpen}>
+      <Dialog 
+      open={isRunModalOpen} 
+      onOpenChange={setIsRunModalOpen}
+      >
         <DialogContent className="min-w-6xl max-h-screen overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Run from Anywhere</DialogTitle>
@@ -191,7 +203,7 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
  -H "Content-Type: application/json" \\
  -d '{
   "plugins": ${JSON.stringify(packages || [])},
-  "flow": ${JSON.stringify({ data: { nodes: selectedWorkflowForRun?.data?.nodes || [], envData: selectedWorkflowForRun?.data?.envData || [] } } || {})}
+  "flow": ${JSON.stringify(getFlowToCurl())}
 }'`}
               readOnly
               rows={5}
