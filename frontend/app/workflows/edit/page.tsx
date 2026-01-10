@@ -3,15 +3,18 @@
 import FlowBuilder from "@/components/flow-builder";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useWorkflow from "@/hooks/useWorkflow";
 
 export default function Home() {
   const { workflow, getWorkflowById } = useWorkflow();
+  const [workflowId, setWorkflowId] = useState<string | null>(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get("id");
+    if (!id) return;
+    setWorkflowId(id);
     getWorkflowById(id);
   }, []);
 
@@ -24,7 +27,9 @@ export default function Home() {
         </Link>
       </div>
       <div className="flex-1">
-        <FlowBuilder flowName={workflow?.name} workflowToEdit={workflow} />
+        <FlowBuilder 
+        worlflowToEditId={workflowId}
+        flowName={workflow?.name} workflowToEdit={workflow} />
       </div>
     </main>
   );

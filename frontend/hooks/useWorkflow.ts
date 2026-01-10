@@ -105,7 +105,7 @@ function useWorkflow() {
     await workflowRepository.update(data.workflowId, {
       data: JSON.stringify(data),
     });
-    toast.success("Workflow atualizado com sucesso");
+    toast.success("Workflow updated with success");
   };
 
   const getCustomNodes = async () => {

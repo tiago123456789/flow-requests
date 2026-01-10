@@ -64,9 +64,11 @@ interface FlowBuilderProps {
   flowName?: string;
   onFlowNameChange?: (name: string) => void;
   workflowToEdit: any;
+  worlflowToEditId?: string
 }
 
 export default function FlowBuilder({
+  worlflowToEditId,
   workflowToEdit,
   flowName,
 }: FlowBuilderProps) {
@@ -475,8 +477,8 @@ export default function FlowBuilder({
 
     if (isTest) {
       runWorkflow({
-        isEditMode: workflowToEdit != null,
-        workflowId: workflowToEdit?.id,
+        isEditMode: worlflowToEditId != null,
+        workflowId: worlflowToEditId,
         contextVariables: [],
         envData: [...envData],
         name: flowName || "",
@@ -489,9 +491,12 @@ export default function FlowBuilder({
       return;
     }
 
-    if (workflowId) {
+    console.log(worlflowToEditId)
+
+    if (worlflowToEditId) {
+      console.log("update")
       await updateWorkflow({
-        workflowId: workflowId,
+        workflowId: worlflowToEditId,
         contextVariables: [],
         name: flowName || "",
         envData: [...envData],
@@ -603,7 +608,7 @@ export default function FlowBuilder({
 
         setNodes(workflowToEdit.originalWorkflow.nodes);
         setEdges(workflowToEdit.originalWorkflow.edges);
-        setWorkflowId(workflowToEdit.id);
+        setWorkflowId(worlflowToEditId);
         setenvData([...workflowToEdit.envData]);
         setOptionsOfMenu(TYPE_OPTION_MENU.NEW_MANY_NODES, nodesName);
         setOptionsOfMenu(TYPE_OPTION_MENU.ENV_DATA, workflowToEdit.envData);
