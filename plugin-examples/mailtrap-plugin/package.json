@@ -1,12 +1,12 @@
 {
   "name": "mailtrap-plugin",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Mailtrap plugin to Flow requests",
-  "main": "dist/index.js",
+  "main": "dist/deno-bundle.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "build": "webpack",
+    "build": "webpack && deno bundle ./src/index.ts -o ./dist/deno-bundle.js",
     "prepublish": "pnpm run build",
     "preinstall": "pnpm run build",
     "start": "tsx src/index.ts",

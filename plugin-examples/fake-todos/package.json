@@ -1,12 +1,13 @@
 {
   "name": "fake-todos-plugin",
-  "version": "1.0.3",
+  "version": "1.1.1",
   "description": "Fake todos plugins",
-  "main": "dist/bundle.js",
+  "main": "dist/deno-bundle.js",
+  "browser": "dist/bundle.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "build": "webpack",
+    "build": "webpack && deno bundle ./src/index.ts -o ./dist/deno-bundle.js",
     "prepublish": "pnpm run build",
     "preinstall": "pnpm run build",
     "start": "tsx src/index.ts",

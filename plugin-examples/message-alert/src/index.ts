@@ -33,7 +33,7 @@ class AlertMessageNode extends NodeBase {
     if (typeof window !== "undefined") {
       alert(this.parseExpression(setting.message));
     } else {
-      console.log(setting.message);
+      console.log(this.parseExpression(setting.message));
     }
     return { ok: true };
   }
