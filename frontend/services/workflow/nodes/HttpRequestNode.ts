@@ -56,7 +56,9 @@ export default class HttpRequestNode extends NodeBase {
 
   async execute(node: NodeInput): Promise<NodeReturn | LinkedList> {
     const setting = node.settings;
+    setting.url = this.parseExpression(setting.url);
 
+    const numberRegex = /([0=9])+/;
     const requestBody: { [key: string]: any } = {};
     for (let index = 0; index < setting.body.length; index += 1) {
       const item = setting.body[index];
@@ -66,9 +68,13 @@ export default class HttpRequestNode extends NodeBase {
 
       let value = this.parseExpression(item.value);
       try {
-        requestBody[item.key] = JSON.parse(value);
+        if (numberRegex.test(item.value)) {
+          requestBody[item.key] = new String(value);
+        } else {
+          requestBody[item.key] = JSON.parse(value);
+        }
       } catch (error) {
-        requestBody[item.key] = value;
+        requestBody[item.key] = new String(value);
       }
     }
 
@@ -82,9 +88,13 @@ export default class HttpRequestNode extends NodeBase {
 
       let value = this.parseExpression(item.value);
       try {
-        requestHeaders[item.key] = JSON.parse(value);
+        if (numberRegex.test(item.value)) {
+          requestHeaders[item.key] = new String(value);
+        } else {
+          requestHeaders[item.key] = JSON.parse(value);
+        }
       } catch (error) {
-        requestHeaders[item.key] = value;
+        requestHeaders[item.key] = new String(value);
       }
     }
 
@@ -108,7 +118,7 @@ export default class HttpRequestNode extends NodeBase {
         requestBody,
         {
           headers: requestHeaders,
-        }
+        },
       );
       return response?.data || {};
     }
@@ -119,7 +129,7 @@ export default class HttpRequestNode extends NodeBase {
         requestBody,
         {
           headers: requestHeaders,
-        }
+        },
       );
       return response?.data || {};
     }
