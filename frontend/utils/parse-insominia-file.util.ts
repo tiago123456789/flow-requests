@@ -24,6 +24,7 @@ const convert = (parent = "", items) => {
     if (item.children) {
       convert(getName(parent, item.name), item.children);
     } else {
+      item.description = item.name;
       item.name = getName(parent, item.name).toLocaleLowerCase();
       itemsCollection.push(parseItemWithoutChildren(item));
     }
@@ -48,7 +49,7 @@ function parseItemWithoutChildren(item: { [key: string]: any }) {
   });
 
   return {
-    description: `${item.name}`,
+    description: `${item.description}`,
     name: item.name.toLowerCase().replace(/\s|-/g, "_"),
     url: replaceInsominiaEnvToEnvData(item.url),
     method: item.method,

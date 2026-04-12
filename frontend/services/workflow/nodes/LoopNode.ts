@@ -38,11 +38,9 @@ export default class LoopNode extends NodeBase {
       source = JSON.parse(source);
     } catch (error) {}
 
-    console.log(source);
-    console.log(source.length);
-
+    const stepName = node.name;
     const steps: { [key: string]: any } = {
-      [node.name]: {
+      [stepName]: {
         currentItem: null,
       },
     };
@@ -53,6 +51,8 @@ export default class LoopNode extends NodeBase {
       envData: [],
     };
 
+    console.log()
+
     for (let index = 0; index < source.length; index += 1) {
       const item = source[index];
       steps[node.name].currentItem = item;
@@ -61,7 +61,7 @@ export default class LoopNode extends NodeBase {
         ...steps,
       };
 
-      await this.engine.process(workflowToRun);
+      await this.engine.process(workflowToRun, {}, `${stepName}_${index}`);
       this.state.steps = {
         ...this.state.steps,
         ...steps,
