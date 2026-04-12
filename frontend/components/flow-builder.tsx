@@ -64,7 +64,7 @@ interface FlowBuilderProps {
   flowName?: string;
   onFlowNameChange?: (name: string) => void;
   workflowToEdit: any;
-  worlflowToEditId?: string
+  worlflowToEditId?: string;
 }
 
 export default function FlowBuilder({
@@ -102,7 +102,7 @@ export default function FlowBuilder({
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isAddCurlModalOpen, setIsAddCurlModalOpen] = useState(false);
   const [optionsMenu, setOptionsMenu] = useState<Array<string>>(
-    OptionMenuUtil.DEFAULT
+    OptionMenuUtil.DEFAULT,
   );
 
   const {
@@ -131,7 +131,7 @@ export default function FlowBuilder({
     const httpRequestNodeItem: { [key: string]: any } = httpRequestNodes.find(
       (item) => {
         return item.label == data.label;
-      }
+      },
     );
 
     if (httpRequestNodeItem) {
@@ -242,7 +242,7 @@ export default function FlowBuilder({
           content: `Node generated is: ${JSON.stringify(
             response.data.result,
             null,
-            2
+            2,
           )}`,
           sender: "assistant",
           timestamp: new Date(),
@@ -391,14 +391,14 @@ export default function FlowBuilder({
     (nodeId: string) => {
       setNodes((nds) => nds.filter((node) => node.id !== nodeId));
       setEdges((eds) =>
-        eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
+        eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId),
       );
       // @ts-ignore
       if (selectedNode && selectedNode.id === nodeId) {
         setSelectedNode(null);
       }
     },
-    [selectedNode, setNodes, setEdges]
+    [selectedNode, setNodes, setEdges],
   );
 
   const saveWorkflow = async (isTest: boolean = false) => {
@@ -442,7 +442,7 @@ export default function FlowBuilder({
         const result = schemaValidation.safeParse(item.data);
         if (!result.success) {
           toast.error(
-            `You need to fill the information of the node ${item.data.name}`
+            `You need to fill the information of the node ${item.data.name}`,
           );
           return;
         }
@@ -454,7 +454,7 @@ export default function FlowBuilder({
         if (!result.success) {
           toast.error(
             // @ts-ignore
-            `You need to fill the information of the node ${item.data.name}`
+            `You need to fill the information of the node ${item.data.name}`,
           );
           return;
         }
@@ -471,7 +471,7 @@ export default function FlowBuilder({
       }
 
       workflow.nodes.push(
-        parseBeforeRunOrSave(item, mapNodesById, ignoreNodeById, index, edges)
+        parseBeforeRunOrSave(item, mapNodesById, ignoreNodeById, index, edges),
       );
     }
 
@@ -502,7 +502,7 @@ export default function FlowBuilder({
           nodes: [...nodes],
           edges: [...edges],
         },
-      })
+      });
       await updateWorkflow({
         ...workflow,
         workflowId: worlflowToEditId,
@@ -571,7 +571,7 @@ export default function FlowBuilder({
 
   const setOptionsOfMenu = (
     type: string,
-    values: Array<string> | string | EnvData[]
+    values: Array<string> | string | EnvData[],
   ) => {
     if (type == TYPE_OPTION_MENU.ENV_DATA) {
       const items: EnvData[] = values as EnvData[];
@@ -606,12 +606,12 @@ export default function FlowBuilder({
                 index + 1
               }`.toLowerCase();
               return node;
-            }
+            },
           );
 
         const nodesName: Array<string> =
           workflowToEdit.originalWorkflow.nodes.map(
-            (item: { [key: string]: any }) => item?.data?.name
+            (item: { [key: string]: any }) => item?.data?.name,
           );
 
         setNodes(workflowToEdit.originalWorkflow.nodes);
@@ -642,7 +642,7 @@ export default function FlowBuilder({
         setSettingsData(
           parsed.length > 0
             ? parsed
-            : [{ id: "openRouterToken", key: "openRouterToken", value: "" }]
+            : [{ id: "openRouterToken", key: "openRouterToken", value: "" }],
         );
       } catch (error) {
         console.error("Error loading settings:", error);

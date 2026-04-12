@@ -61,12 +61,20 @@ class WorkflowEngine {
     return wLinkedList;
   }
 
+  getStepName(stepName: string, loopIndex: string) {
+    if (loopIndex.trim().length > 0) {
+      return `${stepName}_${loopIndex}`;
+    }
+    return stepName;
+  }
+
   async process(
     workflowToProcess: {
       nodes: Array<{ [key: string]: any }>;
       envData: Array<{ [key: string]: any }>;
     },
-    requestData: any
+    requestData: any,
+    loopIndex: string = "",
   ) {
     this.state = { ...workflowToProcess };
     this.state.nodes = this.getWorkflowAsLinkedList(workflowToProcess);
@@ -105,7 +113,7 @@ class WorkflowEngine {
       if (!instanceByType[item.type]) {
         instance = await this.customNodeManager.getCustomNodeByType(
           item.type,
-          this.state
+          this.state,
         );
       } else {
         // @ts-ignore
@@ -140,14 +148,14 @@ class WorkflowEngine {
       if (output instanceof LinkedList) {
         // @ts-ignore
         start = output.head;
-        this.state.steps[name] = {
+        this.state.steps[this.getStepName(name, loopIndex)] = {
           output: {},
           input: this.state.request || {},
         };
         continue;
       }
 
-      this.state.steps[name] = {
+      this.state.steps[this.getStepName(name, loopIndex)] = {
         output,
         input: this.state.request || {},
       };

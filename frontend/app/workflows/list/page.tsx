@@ -19,6 +19,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import useCustomNode from "@/hooks/useCustomPlugin";
 
 const WorkflowsList = () => {
@@ -29,6 +31,8 @@ const WorkflowsList = () => {
   const [selectedWorkflow, setSelectedWorkflow] = useState<any>(null);
   const [isRunModalOpen, setIsRunModalOpen] = useState(false);
   const [selectedWorkflowForRun, setSelectedWorkflowForRun] = useState<any>(null);
+  const [remoteEndpoint, setRemoteEndpoint] = useState("");
+  const [remoteApiKey, setRemoteApiKey] = useState("");
   const promptText = `Role: You are an expert integration engineer specializing in workflow automation and JSON schema mapping.
 Task: Convert a custom "Flow Remote Execution" JSON object into a standard n8n workflow JSON file.
 Input Data:  ${selectedWorkflow ? JSON.stringify(selectedWorkflow.data) : ""}
@@ -68,6 +72,23 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
         nodes: selectedWorkflowForRun?.data?.nodes,
         envData: selectedWorkflowForRun?.data?.envData
        }
+    }
+  };
+
+  const remoteCurlCommand = `curl -X POST "${remoteEndpoint || "YOUR_RENDER_APPLICATION_URL_HERE"}" \\
+-H "api-key: ${remoteApiKey || "API_KEY_VALUE_HERE"}" \\
+-H "Content-Type: application/json" \\
+-d '{
+  "plugins": ${JSON.stringify(packages || [])},
+  "flow": ${JSON.stringify(getFlowToCurl())}
+}'`;
+
+  const copyCurlCommand = async () => {
+    try {
+      await navigator.clipboard.writeText(remoteCurlCommand);
+      toast.success("Curl command copied to clipboard");
+    } catch (error) {
+      toast.error("Failed to copy curl command");
     }
   };
 
@@ -196,20 +217,37 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
               <li>Add environment variables: key(API_KEY), value(any value you want).</li>
               <li>Click button 'Deploy Web service'.</li>
             </ul>
-            <p className="font-bold">Use this curl command to execute the flow:</p>
+<p className="font-bold">Use this curl command to execute the flow:</p>
             <Textarea
-              value={`curl -X POST "YOUR_RENDER_APPLICATION_URL_HERE" \\
- -H "api-key: API_KEY_VALUE_HERE" \\
- -H "Content-Type: application/json" \\
- -d '{
-  "plugins": ${JSON.stringify(packages || [])},
-  "flow": ${JSON.stringify(getFlowToCurl())}
-}'`}
+              value={remoteCurlCommand}
               readOnly
               rows={5}
             />
+            <div className="mt-4 space-y-3">
+              <div>
+                <Label htmlFor="endpoint">Endpoint</Label>
+                <Input
+                  id="endpoint"
+                  type="text"
+                  placeholder="Enter your Render URL"
+                  value={remoteEndpoint}
+                  onChange={(e) => setRemoteEndpoint(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="api-key">API Key</Label>
+                <Input
+                  id="api-key"
+                  type="text"
+                  placeholder="Enter your API key"
+                  value={remoteApiKey}
+                  onChange={(e) => setRemoteApiKey(e.target.value)}
+                />
+              </div>
+            </div>
           </div>
           <DialogFooter>
+            <Button onClick={copyCurlCommand}>Copy Curl Command</Button>
             <Button onClick={() => setIsRunModalOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>

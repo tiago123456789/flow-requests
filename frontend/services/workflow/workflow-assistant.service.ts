@@ -96,7 +96,7 @@ class WorkflowAssistantService {
         schema: z.object({
           userPrompt: z.string().describe("The message user sent"),
         }),
-      }
+      },
     );
   }
 
@@ -172,7 +172,7 @@ class WorkflowAssistantService {
             .string()
             .describe("The current nodes from workflow to edit"),
         }),
-      }
+      },
     );
   }
 
@@ -188,7 +188,7 @@ class WorkflowAssistantService {
 
   async processUserMessage(
     currentNodes: Array<{ [key: string]: any }>,
-    userPrompt: string
+    userPrompt: string,
   ): Promise<{ result: string } | string> {
     let prompt =
       "You are the assistent to help to build workflows and use the tools to answer the user instructions.\n";
