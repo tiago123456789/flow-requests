@@ -8,8 +8,8 @@ const nextConfig: NextConfig = {
       config.plugins.push(
         new webpack.NormalModuleReplacementPlugin(
           /^node:async_hooks$/,
-          path.resolve(__dirname, "async_hooks")
-        )
+          path.resolve(__dirname, "async_hooks"),
+        ),
       );
     }
     return config;
@@ -23,6 +23,7 @@ const nextConfig: NextConfig = {
   },
   output: "export",
   reactStrictMode: true,
+  trailingSlash: true,
 };
 
 export default nextConfig;
