@@ -2,3 +2,6 @@ frontend/node_modules/
 frontend/.next/
 frontend/.env
 frontend/.env*
+
+core-package/node_modules/
+core-package/dist/
