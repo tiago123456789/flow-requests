@@ -135,6 +135,22 @@ export function SettingsModal({
           </AlertDescription>
         </Alert>
 
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertTitle>How to Generate AssemblyAI Token</AlertTitle>
+          <AlertDescription>
+            You can generate the 'assemblyAiToken' key by creating an account on{" "}
+            <a
+              href="https://www.assemblyai.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              https://www.assemblyai.com/
+            </a>
+            , go to Settings {'>'} API Keys, and copy your API key. This token is required for voice transcription.
+          </AlertDescription>
+        </Alert>
+
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div>

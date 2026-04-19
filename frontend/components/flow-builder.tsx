@@ -98,6 +98,7 @@ export default function FlowBuilder({
   const [isEnvDataModalOpen, setIsEnvDataModalOpen] = useState(false);
   const [settingsData, setSettingsData] = useState<any[]>([
     { id: "openRouterToken", key: "openRouterToken", value: "" },
+    { id: "assemblyAiToken", key: "assemblyAiToken", value: "" },
   ]);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isAddCurlModalOpen, setIsAddCurlModalOpen] = useState(false);
@@ -204,7 +205,7 @@ export default function FlowBuilder({
     setNodes([...items]);
   };
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, audioUrl?: string) => {
     try {
       const response = await handleUserChatMessage(content, [
         ...nodes,
@@ -215,9 +216,10 @@ export default function FlowBuilder({
         ...prev,
         {
           id: Date.now().toString(),
-          content,
+          content: audioUrl ? `[Voice Message]: ${content}` : content,
           sender: "user",
           timestamp: new Date(),
+          audioUrl,
         },
       ]);
 

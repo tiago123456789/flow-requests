@@ -6,12 +6,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { Minus, Plus, MessageCircle } from "lucide-react";
+import { Minus, Plus, MessageCircle, Mic } from "lucide-react";
 import Message from "@/types/message";
+import { useAudioRecorder } from "@/hooks/useAudioRecorder";
+import { assemblyAIService } from "@/services/assembly-ai.service";
+import { AudioRecorderButton } from "./audio-recorder-button";
 
 interface ChatComponentProps {
   messages?: Message[];
-  onSendMessage?: (message: string) => void;
+  onSendMessage?: (message: string, audioUrl?: string) => void;
   placeholder?: string;
   className?: string;
   maxHeight?: string;
@@ -38,9 +41,19 @@ export function ChatComponent({
   const [position, setPosition] = useState(defaultPosition);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
+
+  const {
+    isRecording,
+    recordingDuration,
+    audioBase64,
+    startRecording,
+    stopRecording,
+    resetRecording,
+  } = useAudioRecorder();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -53,7 +66,25 @@ export function ChatComponent({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!input.trim() || isLoading) return;
+    if ((!input.trim() || isLoading) && !audioBase64) return;
+
+    if (audioBase64) {
+      setIsTranscribing(true);
+      try {
+        await stopRecording();
+        const transcription = await assemblyAIService.transcribe(audioBase64);
+        resetRecording();
+        setIsLoading(true);
+        await onSendMessage?.(transcription, audioBase64);
+      } catch (error) {
+        console.error("Transcription error:", error);
+        resetRecording();
+      } finally {
+        setIsTranscribing(false);
+        setIsLoading(false);
+      }
+      return;
+    }
 
     const messageContent = input.trim();
     setInput("");
@@ -64,6 +95,37 @@ export function ChatComponent({
     } catch (error) {
       console.error(error);
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (audioBase64) {
+      (async () => {
+        try {
+          const transcription = await assemblyAIService.transcribe(audioBase64);
+          resetRecording();
+          setIsLoading(true);
+          await onSendMessage?.(transcription, audioBase64);
+        } catch (error) {
+          console.error("Transcription error:", error);
+          resetRecording();
+        } finally {
+          setIsTranscribing(false);
+          setIsLoading(false);
+        }
+      })();
+    }
+  }, [audioBase64]);
+
+  const handleAudioSend = async () => {
+    setIsTranscribing(true);
+    try {
+      await stopRecording();
+    } catch (error) {
+      console.error("Transcription error:", error);
+      resetRecording();
+      setIsTranscribing(false);
       setIsLoading(false);
     }
   };
@@ -132,7 +194,7 @@ export function ChatComponent({
   const chatClasses = cn(
     "flex flex-col",
     className,
-    isFloating && "fixed z-50 shadow-lg border-2"
+    isFloating && "fixed z-50 shadow-lg border-2",
   );
 
   return (
@@ -153,7 +215,7 @@ export function ChatComponent({
         <CardHeader
           className={cn(
             "flex flex-row items-center justify-between space-y-0 pb-2",
-            isFloating && "cursor-grab active:cursor-grabbing select-none"
+            isFloating && "cursor-grab active:cursor-grabbing select-none",
           )}
           onMouseDown={handleMouseDown}
         >
@@ -195,7 +257,7 @@ export function ChatComponent({
                       "flex",
                       message.sender === "user"
                         ? "justify-end"
-                        : "justify-start"
+                        : "justify-start",
                     )}
                   >
                     <div
@@ -203,7 +265,7 @@ export function ChatComponent({
                         "max-w-[80%] rounded-lg px-3 py-2 text-sm",
                         message.sender === "user"
                           ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
+                          : "bg-muted",
                       )}
                     >
                       <p className="whitespace-pre-wrap">{message.content}</p>
@@ -212,7 +274,7 @@ export function ChatComponent({
                           "text-xs mt-1 opacity-70",
                           message.sender === "user"
                             ? "text-primary-foreground"
-                            : "text-muted-foreground"
+                            : "text-muted-foreground",
                         )}
                       >
                         {message.timestamp.toLocaleTimeString([], {
@@ -245,21 +307,55 @@ export function ChatComponent({
             </div>
 
             {/* Input Area */}
-            <form onSubmit={handleSubmit} className="flex gap-2">
+            <form onSubmit={handleSubmit} className="flex gap-2 items-end">
               <div className="flex-1 relative">
-                <Textarea
-                  ref={textareaRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={placeholder}
-                  className="resize-none pr-12 min-h-[40px] max-h-[120px]"
-                  disabled={isLoading}
-                />
+                {isRecording ? (
+                  <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-md">
+                    <Mic className="h-4 w-4 text-red-500 animate-pulse" />
+                    <span className="text-sm text-slate-600 flex-1">
+                      Recording... {Math.floor(recordingDuration / 60)}:
+                      {(recordingDuration % 60).toString().padStart(2, "0")}
+                    </span>
+                  </div>
+                ) : (
+                  <Textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={placeholder}
+                    className="resize-none pr-12 min-h-[40px] max-h-[120px]"
+                    disabled={isLoading || isTranscribing}
+                  />
+                )}
               </div>
+              {isTranscribing ? (
+                <div className="self-end px-3 py-2 bg-slate-100 rounded-md">
+                  <span className="text-sm text-slate-500">
+                    Transcribing...
+                  </span>
+                </div>
+              ) : isRecording ? (
+                <Button
+                  type="button"
+                  onClick={handleAudioSend}
+                  className="self-end bg-red-500 hover:bg-red-600"
+                  size="sm"
+                >
+                  Send
+                </Button>
+              ) : (
+                <AudioRecorderButton
+                  isRecording={isRecording}
+                  recordingDuration={recordingDuration}
+                  onStartRecording={startRecording}
+                  onStopRecording={stopRecording}
+                  // disabled={isLoading}
+                />
+              )}
               <Button
                 type="submit"
-                disabled={!input.trim() || isLoading}
+                disabled={(!input.trim() || isLoading) && !audioBase64}
                 className="self-end"
                 size="sm"
               >
