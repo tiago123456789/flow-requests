@@ -5,6 +5,8 @@ interface Message {
   content: string;
   sender: SenderTypes;
   timestamp: Date;
+  audioUrl?: string;
+  isTranscribing?: boolean;
 }
 
 export default Message;
