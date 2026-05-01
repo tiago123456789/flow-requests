@@ -33,6 +33,12 @@ const WorkflowsList = () => {
   const [selectedWorkflowForRun, setSelectedWorkflowForRun] = useState<any>(null);
   const [remoteEndpoint, setRemoteEndpoint] = useState("");
   const [remoteApiKey, setRemoteApiKey] = useState("");
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [selectedWorkflowForSave, setSelectedWorkflowForSave] = useState<any>(null);
+  const [saveApiUrl, setSaveApiUrl] = useState("");
+  const [saveApiKey, setSaveApiKey] = useState("");
+  const [savedWebhookId, setSavedWebhookId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const promptText = `Role: You are an expert integration engineer specializing in workflow automation and JSON schema mapping.
 Task: Convert a custom "Flow Remote Execution" JSON object into a standard n8n workflow JSON file.
 Input Data:  ${selectedWorkflow ? JSON.stringify(selectedWorkflow.data) : ""}
@@ -66,12 +72,12 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
     }
   };
 
-  const getFlowToCurl = (): { data: { nodes: any; envData: any; }} => {
+  const getFlowToCurl = (): { data: { nodes: any; envData: any; } } => {
     return {
-       data: {
+      data: {
         nodes: selectedWorkflowForRun?.data?.nodes,
         envData: selectedWorkflowForRun?.data?.envData
-       }
+      }
     }
   };
 
@@ -90,6 +96,75 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
     } catch (error) {
       toast.error("Failed to copy curl command");
     }
+  };
+
+  const saveFlowRequest = async () => {
+    if (!saveApiUrl.trim()) {
+      toast.error("Please enter the API URL");
+      return;
+    }
+    if (!saveApiKey.trim()) {
+      toast.error("Please enter the API Key");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const baseUrl = saveApiUrl.replace(/\/$/, "");
+      const requestBody = {
+        plugins: packages || [],
+        flow: {
+          data: {
+            nodes: selectedWorkflowForSave.data.nodes,
+            envData: selectedWorkflowForSave.data.envData,
+          },
+        },
+      };
+
+      const response = await fetch(`${baseUrl}/flow-requests`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": saveApiKey,
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSavedWebhookId(data.id);
+      toast.success("Flow request saved successfully!");
+    } catch (error: any) {
+      toast.error(`Failed to save flow request: ${error.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const savedWebhookCurl = savedWebhookId
+    ? `curl -X POST "${saveApiUrl.replace(/\/$/, "")}/webhooks/${savedWebhookId}/run" \\
+-H "api-key: ${saveApiKey}" \\
+-H "Content-Type: application/json"`
+    : "";
+
+  const copySavedWebhookCurl = async () => {
+    try {
+      await navigator.clipboard.writeText(savedWebhookCurl);
+      toast.success("Webhook curl command copied to clipboard");
+    } catch (error) {
+      toast.error("Failed to copy curl command");
+    }
+  };
+
+  const resetSaveModal = () => {
+    setIsSaveModalOpen(false);
+    setSelectedWorkflowForSave(null);
+    setSaveApiUrl("");
+    setSaveApiKey("");
+    setSavedWebhookId(null);
   };
 
   useEffect(() => {
@@ -175,6 +250,14 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
                       >
                         Run from anywhere
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedWorkflowForSave(workflow);
+                          setIsSaveModalOpen(true);
+                        }}
+                      >
+                        Save flow request
+                      </DropdownMenuItem>
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -199,9 +282,9 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Dialog 
-      open={isRunModalOpen} 
-      onOpenChange={setIsRunModalOpen}
+      <Dialog
+        open={isRunModalOpen}
+        onOpenChange={setIsRunModalOpen}
       >
         <DialogContent className="min-w-6xl max-h-screen overflow-y-auto">
           <DialogHeader>
@@ -216,8 +299,9 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
               <li>Click button Connect, Select free plan.</li>
               <li>Add environment variables: key(API_KEY), value(any value you want).</li>
               <li>Click button 'Deploy Web service'.</li>
+              <li>Your endpoint will look like: https://your-app.onrender.com/run</li>
             </ul>
-<p className="font-bold">Use this curl command to execute the flow:</p>
+            <p className="font-bold">Use this curl command to execute the flow:</p>
             <Textarea
               value={remoteCurlCommand}
               readOnly
@@ -249,6 +333,77 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
           <DialogFooter>
             <Button onClick={copyCurlCommand}>Copy Curl Command</Button>
             <Button onClick={() => setIsRunModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isSaveModalOpen} onOpenChange={(open) => !open && resetSaveModal()}>
+        <DialogContent className="min-w-6xl max-h-screen overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Save Flow Request</DialogTitle>
+          </DialogHeader>
+          {!savedWebhookId ? (
+            <div className="space-y-4">
+              <div className="mb-4">
+                <p className="font-bold">Follow these steps to deploy your flow remotely:</p>
+                <ul>
+                  <li>Create an account on Render (render.com), select Free plan.</li>
+                  <li>Sign in, click button 'New', select Web service.</li>
+                  <li>Select option 'Existing Image', fill input with 'tiagorosadacosta123456/run-flow-request-remotly'.</li>
+                  <li>Click button Connect, Select free plan.</li>
+                  <li>Add environment variables: key(API_KEY), value(any value you want).</li>
+                  <li>Add environment variables: key(DB_URL), value(postgresql URL connection).</li>
+                  <li>Add environment variables: key(WEBHOOK_MODE), value(true to enable webhook feature).</li>
+
+
+                  <li>Click button 'Deploy Web service'.</li>
+                </ul>
+              </div>
+              <div>
+                <Label htmlFor="save-api-url">API URL</Label>
+                <Input
+                  id="save-api-url"
+                  type="text"
+                  placeholder="Enter API base URL"
+                  value={saveApiUrl}
+                  onChange={(e) => setSaveApiUrl(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="save-api-key">API Key</Label>
+                <Input
+                  id="save-api-key"
+                  type="password"
+                  placeholder="Enter API key"
+                  value={saveApiKey}
+                  onChange={(e) => setSaveApiKey(e.target.value)}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-green-600 font-semibold">Flow request saved successfully!</p>
+              <p className="font-bold">Use this curl command to trigger the webhook:</p>
+              <Textarea
+                value={savedWebhookCurl}
+                readOnly
+                rows={3}
+              />
+            </div>
+          )}
+          <DialogFooter>
+            {!savedWebhookId ? (
+              <>
+                <Button onClick={resetSaveModal} variant="outline">Cancel</Button>
+                <Button onClick={saveFlowRequest} disabled={isSaving}>
+                  {isSaving ? "Saving..." : "Save"}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button onClick={copySavedWebhookCurl}>Copy Curl Command</Button>
+                <Button onClick={resetSaveModal}>Close</Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
