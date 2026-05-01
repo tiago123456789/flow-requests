@@ -1,6 +1,8 @@
 FROM denoland/deno:2.6.3
 
 ENV API_KEY=""
+ENV DB_URL=""
+ENV WEBHOOK_MODE="false"
 
 EXPOSE 8000
 

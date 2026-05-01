@@ -3,6 +3,9 @@
   "imports": {
     "@faker-js/faker": "npm:@faker-js/faker@^10.2.0",
     "axios": "npm:axios@^1.13.2",
-    "core-package-mini-n8n": "npm:core-package-mini-n8n@^1.3.0"
+    "core-package-mini-n8n": "npm:core-package-mini-n8n@^1.3.0",
+    "hono": "npm:hono@^4.7.0",
+    "knex": "npm:knex@^3.1.0",
+    "pg": "npm:pg@^8.13.0"
   }
 }
