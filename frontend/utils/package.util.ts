@@ -10,16 +10,30 @@ class PackageUtil {
     for (const customPackage of customPackages) {
       try {
         const instance = eval(`${customPackage.libraryName}`);
+        const isUrl = instance?.src && `${instance?.src}`.startsWith("https")
         if (instance.default) {
           customNode.push(new instance.default(state));
-        } else {
+        } else if (!isUrl) {
           customNode.push(new instance(state));
+        } else if (isUrl) {
+          const instance = await this.getInstanceViaUrl(customPackage)
+          if (instance.default) {
+            customNode.push(new instance.default(state));
+          } 
         }
       } catch (error) {
         console.error(error);
       }
     }
     return customNode;
+  }
+
+  private getInstanceViaUrl(customPackage) {
+    return fetch(customPackage.url)
+      .then(response => response.text())
+      .then(content => {
+        return eval(`${content} \n ${customPackage.libraryName}`)
+      })
   }
 
   async install(

@@ -602,7 +602,7 @@ export default function FlowBuilder({
             (node: any, index: number) => {
               const type = node.type;
               const nodeDefaultData = defaultDataByNodeTypes[type];
-              node.data.isCustomNode = nodeDefaultData.isCustomNode || false;
+              node.data.isCustomNode = nodeDefaultData?.isCustomNode || false;
               const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
               node.data.name = `trigger_${typeLabel}_${
                 index + 1
