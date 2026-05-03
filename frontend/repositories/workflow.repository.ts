@@ -21,7 +21,7 @@ async function findById(id: string) {
 
 function update(id: string, data: { [key: string]: any }) {
   console.log(id, data)
-  return (db as any).workflows.update(id, data);
+  return (db as any).workflows.put({  ...data, id: Number(id) });
 }
 
 function insert(data: { [key: string]: any }) {
