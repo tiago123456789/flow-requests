@@ -11,12 +11,10 @@ import {
 } from "@/components/ui/select";
 import { ToastContainer, toast } from "react-toastify";
 import { useEffect, useState } from "react";
-import { useSearchParams } from 'next/navigation'
 import { FormConfig } from "@/types/form-builder"
 
 const FormPage = () => {
-  const searchParams = useSearchParams()
-  const hash = searchParams.get('hash') as string
+  
 
   const [config, setConfig] = useState<FormConfig | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +24,8 @@ const FormPage = () => {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hash = urlParams.get('hash') as string
     if (!hash) return;
     try {
       const decoded = atob(hash);
@@ -41,7 +41,7 @@ const FormPage = () => {
       console.log(err)
       setError("Invalid form link");
     }
-  }, [hash]);
+  }, []);
 
   const handleValueChange = (name: string, value: string) => {
     setFormValues((prev) => ({ ...prev, [name]: value }));
