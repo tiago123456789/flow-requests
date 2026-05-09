@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import useCustomNode from "@/hooks/useCustomPlugin";
+import FormBuilderModal from "@/components/form-builder-modal";
 
 const WorkflowsList = () => {
   const { importFlows, exportFlows, deleteWorkflow, workflows, getWorkflows } =
@@ -39,6 +40,7 @@ const WorkflowsList = () => {
   const [saveApiKey, setSaveApiKey] = useState("");
   const [savedWebhookId, setSavedWebhookId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isFormBuilderOpen, setIsFormBuilderOpen] = useState(false);
   const promptText = `Role: You are an expert integration engineer specializing in workflow automation and JSON schema mapping.
 Task: Convert a custom "Flow Remote Execution" JSON object into a standard n8n workflow JSON file.
 Input Data:  ${selectedWorkflow ? JSON.stringify(selectedWorkflow.data) : ""}
@@ -258,6 +260,11 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
                       >
                         Save flow request
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => setIsFormBuilderOpen(true)}
+                      >
+                        Form Builder
+                      </DropdownMenuItem>
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -407,6 +414,10 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <FormBuilderModal
+        isOpen={isFormBuilderOpen}
+        onClose={() => setIsFormBuilderOpen(false)}
+      />
     </div>
   );
 };
