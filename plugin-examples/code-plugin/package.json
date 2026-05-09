@@ -1,0 +1,41 @@
+{
+  "name": "code-plugin",
+  "version": "1.0.0",
+  "description": "Execute code in an isolated Upstash Box sandbox",
+  "main": "dist/deno-bundle.js",
+  "browser": "dist/bundle.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "webpack && deno bundle ./src/index.ts -o ./dist/deno-bundle.js",
+    "prepublish": "pnpm run build",
+    "preinstall": "pnpm run build",
+    "start": "tsx src/index.ts",
+    "test": "jest ./tests/*.spec.ts"
+  },
+  "dependencies": {
+    "@upstash/box": "^0.2.0",
+    "axios": "^1.13.2",
+    "core-package-mini-n8n": "^1.1.5",
+    "ts-loader": "^9.5.4"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.2.0",
+    "@types/jest": "^30.0.0",
+    "@types/nodemailer": "^7.0.4",
+    "esbuild": "^0.27.2",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "webpack": "^5.104.1",
+    "webpack-cli": "^6.0.1"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
