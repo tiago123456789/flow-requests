@@ -23,6 +23,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import useCustomNode from "@/hooks/useCustomPlugin";
 import FormBuilderModal from "@/components/form-builder-modal";
+import ConfigureRemoteModal from "@/components/configure-remote-modal";
+import ListMcpsModal from "@/components/list-mcps-modal";
+import CreateMcpToolModal from "@/components/create-mcp-tool-modal";
 
 const WorkflowsList = () => {
   const { importFlows, exportFlows, deleteWorkflow, workflows, getWorkflows } =
@@ -41,6 +44,10 @@ const WorkflowsList = () => {
   const [savedWebhookId, setSavedWebhookId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isFormBuilderOpen, setIsFormBuilderOpen] = useState(false);
+  const [isConfigureRemoteOpen, setIsConfigureRemoteOpen] = useState(false);
+  const [isListMcpsOpen, setIsListMcpsOpen] = useState(false);
+  const [isCreateMcpOpen, setIsCreateMcpOpen] = useState(false);
+  const [selectedWorkflowForMcp, setSelectedWorkflowForMcp] = useState<any>(null);
   const promptText = `Role: You are an expert integration engineer specializing in workflow automation and JSON schema mapping.
 Task: Convert a custom "Flow Remote Execution" JSON object into a standard n8n workflow JSON file.
 Input Data:  ${selectedWorkflow ? JSON.stringify(selectedWorkflow.data) : ""}
@@ -112,8 +119,10 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
 
     setIsSaving(true);
     try {
+      console.log(selectedWorkflowForSave)
       const baseUrl = saveApiUrl.replace(/\/$/, "");
       const requestBody = {
+        name: selectedWorkflowForSave.name,
         plugins: packages || [],
         flow: {
           data: {
@@ -193,6 +202,12 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
       <Button onClick={importFlows} variant="outline">
         Import flows
       </Button>
+      &nbsp;
+      <Button onClick={() => setIsConfigureRemoteOpen(true)} variant="outline">
+        Configure remote
+      </Button>
+      &nbsp;
+      <Button onClick={() => setIsListMcpsOpen(true)}>List MCPS</Button>
       <br />
       <br />
       <table className="min-w-full divide-y divide-gray-200">
@@ -259,6 +274,14 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
                         }}
                       >
                         Save flow request
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedWorkflowForMcp(workflow);
+                          setIsCreateMcpOpen(true);
+                        }}
+                      >
+                        Create a MCP&apos;s tool
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => setIsFormBuilderOpen(true)}
@@ -417,6 +440,23 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
       <FormBuilderModal
         isOpen={isFormBuilderOpen}
         onClose={() => setIsFormBuilderOpen(false)}
+      />
+      <ConfigureRemoteModal
+        isOpen={isConfigureRemoteOpen}
+        onClose={() => setIsConfigureRemoteOpen(false)}
+      />
+      <ListMcpsModal
+        isOpen={isListMcpsOpen}
+        onClose={() => setIsListMcpsOpen(false)}
+      />
+      <CreateMcpToolModal
+        isOpen={isCreateMcpOpen}
+        onClose={() => {
+          setIsCreateMcpOpen(false);
+          setSelectedWorkflowForMcp(null);
+        }}
+        workflow={selectedWorkflowForMcp}
+        packages={packages || []}
       />
     </div>
   );
