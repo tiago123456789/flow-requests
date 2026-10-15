@@ -21,8 +21,15 @@ module.exports = {
     library: "CodeNode",
     libraryTarget: "umd",
     umdNamedDefine: true,
+    // execute() (the only place using a native import()) never runs in the
+    // browser; this just allows webpack to preserve the Deno remote import.
+    environment: {
+      dynamicImport: true,
+    },
   },
+  // node:vm is a Deno/Node-only built-in (used only by execute(), never in the
+  // browser). Keep it external so the browser bundle still builds.
   externals: {
-    "@upstash/box": "@upstash/box",
+    "node:vm": "commonjs node:vm",
   },
 };
