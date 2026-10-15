@@ -20,6 +20,8 @@
     "npm:hono@^4.7.0": "4.12.16",
     "npm:knex@^3.1.0": "3.2.9",
     "npm:pg-plugin-flow-requests@1.0.4": "1.0.4",
+    "npm:pg-plugin-flow-requests@1.0.5": "1.0.5",
+    "npm:pg-plugin-flow-requests@1.0.6": "1.0.6",
     "npm:pg@^8.13.0": "8.20.0",
     "npm:pkce-challenge@5": "5.0.1",
     "npm:telegram-plugin-flow-requests@1.0.2": "1.0.2",
@@ -421,7 +423,7 @@
       "dependencies": [
         "axios",
         "core-package-mini-n8n",
-        "ts-loader@9.5.4_typescript@5.9.3_webpack@5.104.1__acorn@8.15.0"
+        "ts-loader@9.5.4_typescript@5.9.3_webpack@5.104.1"
       ],
       "scripts": true
     },
@@ -741,7 +743,7 @@
       "dependencies": [
         "axios",
         "core-package-mini-n8n",
-        "ts-loader@9.5.4_typescript@5.9.3_webpack@5.104.1__acorn@8.15.0"
+        "ts-loader@9.5.4_typescript@5.9.3_webpack@5.104.1"
       ],
       "scripts": true
     },
@@ -1043,6 +1045,22 @@
     },
     "pg-plugin-flow-requests@1.0.4": {
       "integrity": "sha512-7Xg/lKFquxxMTU/rBb9NXcefPLCEAVpF+od9sdD7EyUxCW3ddfUqQZHYbqx1hs7T3rk2bGs4H+ilyW4DoQyztA==",
+      "dependencies": [
+        "core-package-mini-n8n",
+        "ts-loader@9.5.4"
+      ],
+      "scripts": true
+    },
+    "pg-plugin-flow-requests@1.0.5": {
+      "integrity": "sha512-m6Ns2AXPmCalyK72vHU0ZNSsmGGDzS0a1DHjB0EuCqEQY8vVZOK+PGOd+A8RW20Oz4K73Wd8C676Yscpbitxxg==",
+      "dependencies": [
+        "core-package-mini-n8n",
+        "ts-loader@9.5.4"
+      ],
+      "scripts": true
+    },
+    "pg-plugin-flow-requests@1.0.6": {
+      "integrity": "sha512-VRf7YhzZ++DKE2UXoDKRRLpkx74xb3dwaEB0Z+ee/PcZcwVVtnQd+Ea2s62/664jpEUDyZ/fqbZG7nkXCWxH4Q==",
       "dependencies": [
         "core-package-mini-n8n",
         "ts-loader@9.5.4"
@@ -1353,7 +1371,7 @@
         "source-map@0.7.6"
       ]
     },
-    "ts-loader@9.5.4_typescript@5.9.3_webpack@5.104.1__acorn@8.15.0": {
+    "ts-loader@9.5.4_typescript@5.9.3_webpack@5.104.1": {
       "integrity": "sha512-nCz0rEwunlTZiy6rXFByQU1kVVpCIgUpc/psFiKVrUwrizdnIbRFu8w7bxhUF0X613DYwT4XzrZHpVyMe758hQ==",
       "dependencies": [
         "chalk",

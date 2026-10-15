@@ -1,5 +1,6 @@
 {
   "nodeModulesDir": "auto",
+  "minimumDependencyAge": 0,
   "imports": {
     "@faker-js/faker": "npm:@faker-js/faker@^10.2.0",
     "@hono/mcp": "jsr:@hono/mcp@^0.2.0",
