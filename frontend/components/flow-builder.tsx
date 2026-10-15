@@ -30,6 +30,8 @@ import {
   Globe,
   List,
   Settings,
+  ClipboardCopy,
+  ClipboardPaste,
 } from "lucide-react";
 import { z } from "zod";
 import { CodeNode } from "./nodes/code-node";
@@ -71,6 +73,7 @@ export default function FlowBuilder({
   worlflowToEditId,
   workflowToEdit,
   flowName,
+  onFlowNameChange,
 }: FlowBuilderProps) {
   const router = useRouter();
   const reactFlowWrapper = useRef(null);
@@ -403,6 +406,52 @@ export default function FlowBuilder({
     [selectedNode, setNodes, setEdges],
   );
 
+  const copyFlow = async () => {
+    try {
+      const payload = {
+        name: flowName,
+        envData: [...envData],
+        originalWorkflow: { nodes: [...nodes], edges: [...edges] },
+      };
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      toast.success("Flow JSON copied to clipboard");
+    } catch {
+      toast.error("Failed to copy flow JSON");
+    }
+  };
+
+  const pasteFlow = async () => {
+    let data: any;
+    try {
+      const text = await navigator.clipboard.readText();
+      data = JSON.parse(text);
+    } catch {
+      toast.error("Invalid flow JSON in clipboard");
+      return;
+    }
+
+    if (!data?.originalWorkflow?.nodes) {
+      toast.error("Invalid flow JSON in clipboard");
+      return;
+    }
+
+    try {
+      setNodes(data.originalWorkflow.nodes);
+      setEdges(data.originalWorkflow.edges || []);
+      setenvData(data.envData || []);
+      onFlowNameChange?.(data.name);
+      const nodeNames: Array<string> = data.originalWorkflow.nodes.map(
+        (item: { [key: string]: any }) => item?.data?.name,
+      );
+      setOptionsOfMenu(TYPE_OPTION_MENU.NEW_MANY_NODES, nodeNames);
+      setOptionsOfMenu(TYPE_OPTION_MENU.ENV_DATA, data.envData || []);
+      toast.success("Flow loaded from clipboard");
+    } catch (error) {
+      console.error("Failed to load flow from clipboard:", error);
+      toast.error("Failed to load flow from clipboard");
+    }
+  };
+
   const saveWorkflow = async (isTest: boolean = false) => {
     if (nodes.length == 0) {
       toast.error("You need at least one node to start the Worflow");
@@ -677,6 +726,14 @@ export default function FlowBuilder({
             <Controls />
             <Background />
             <Panel position="top-right" className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={copyFlow}>
+                <ClipboardCopy className="mr-2 h-4 w-4" />
+                Copy Flow
+              </Button>
+              <Button size="sm" variant="outline" onClick={pasteFlow}>
+                <ClipboardPaste className="mr-2 h-4 w-4" />
+                Paste Flow
+              </Button>
               <Button
                 size="sm"
                 variant="outline"

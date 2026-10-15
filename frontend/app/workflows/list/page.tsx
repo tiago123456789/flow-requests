@@ -26,11 +26,16 @@ import FormBuilderModal from "@/components/form-builder-modal";
 import ConfigureRemoteModal from "@/components/configure-remote-modal";
 import ListMcpsModal from "@/components/list-mcps-modal";
 import CreateMcpToolModal from "@/components/create-mcp-tool-modal";
+import useRemoteConfig, {
+  getRemoteConfig,
+  normalizeBaseUrl,
+} from "@/hooks/useRemoteConfig";
 
 const WorkflowsList = () => {
   const { importFlows, exportFlows, deleteWorkflow, workflows, getWorkflows } =
     useWorkflow();
   const { fetchPackages, packages } = useCustomNode();
+  const { load } = useRemoteConfig();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedWorkflow, setSelectedWorkflow] = useState<any>(null);
   const [isRunModalOpen, setIsRunModalOpen] = useState(false);
@@ -120,7 +125,7 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
     setIsSaving(true);
     try {
       console.log(selectedWorkflowForSave)
-      const baseUrl = saveApiUrl.replace(/\/$/, "");
+      const baseUrl = normalizeBaseUrl(saveApiUrl);
       const requestBody = {
         name: selectedWorkflowForSave.name,
         plugins: packages || [],
@@ -156,7 +161,7 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
   };
 
   const savedWebhookCurl = savedWebhookId
-    ? `curl -X POST "${saveApiUrl.replace(/\/$/, "")}/webhooks/${savedWebhookId}/run" \\
+    ? `curl -X POST "${normalizeBaseUrl(saveApiUrl)}/webhooks/${savedWebhookId}/run" \\
 -H "api-key: ${saveApiKey}" \\
 -H "Content-Type: application/json"`
     : "";
@@ -270,6 +275,10 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
                       <DropdownMenuItem
                         onClick={() => {
                           setSelectedWorkflowForSave(workflow);
+                          load();
+                          const remote = getRemoteConfig();
+                          setSaveApiUrl(remote.baseUrl);
+                          setSaveApiKey(remote.apiKey);
                           setIsSaveModalOpen(true);
                         }}
                       >
