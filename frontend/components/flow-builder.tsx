@@ -41,6 +41,7 @@ import { SettingsModal } from "./settings-modal";
 import { AddCurlModal } from "./add-curl-modal";
 import { FlowSidebar } from "./flow-sidebar";
 import { CustomNode } from "./nodes/custom-node";
+import { DeletableEdge } from "./edges/deletable-edge";
 import { useRouter } from "next/navigation";
 import useWorkflow from "@/hooks/useWorkflow";
 import Message from "@/types/message";
@@ -61,6 +62,10 @@ const validationDataNodeTypes: {
 } = VALIDATION_BY_NODE_TYPES;
 const initialNodes = INITIAL_NODES;
 const initialEdges: Array<{ [key: string]: any }> = [];
+
+const edgeTypes = {
+  default: DeletableEdge,
+};
 
 interface FlowBuilderProps {
   flowName?: string;
@@ -406,6 +411,13 @@ export default function FlowBuilder({
     [selectedNode, setNodes, setEdges],
   );
 
+  const deleteEdge = useCallback(
+    (edgeId: string) => {
+      setEdges((eds) => eds.filter((edge) => edge.id !== edgeId));
+    },
+    [setEdges],
+  );
+
   const copyFlow = async () => {
     try {
       const payload = {
@@ -714,12 +726,19 @@ export default function FlowBuilder({
                 duplicateNode: () => duplicateNode(node.id),
               },
             }))}
-            edges={edges}
+            edges={edges.map((edge) => ({
+              ...edge,
+              data: {
+                ...edge.data,
+                onDelete: deleteEdge,
+              },
+            }))}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={onNodeClick}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             fitView
             className="w-full h-full"
           >
