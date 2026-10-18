@@ -12,9 +12,9 @@ class TemplateNode extends NodeBase {
 
   getConfig(): NodeConfig {
     return {
-      name: "template", // Name e type needs to be the same
-      type: "template", // Name e type needs to be the same
-      description: "Github node",
+      name: "TemplateNode", // name === type === output.library in webpack.config.cjs
+      type: "TemplateNode", // name === type === output.library in webpack.config.cjs
+      description: "GitHub example node",
       properties: [
         {
           label: "Github username",

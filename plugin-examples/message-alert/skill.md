@@ -1,10 +1,10 @@
 # Skill: Message Alert Plugin
 
 **Name:** AlertMessageNode
-**Version:** 1.4.0
+**Version:** 2.0.0
 **npm package:** alert-message-plugin-flow-requests
-**CDN (browser):** https://unpkg.com/alert-message-plugin-flow-requests@1.4.0/dist/bundle.js
-**CDN (server):** https://unpkg.com/alert-message-plugin-flow-requests@1.4.0/dist/deno-bundle.js
+**CDN (browser):** https://unpkg.com/alert-message-plugin-flow-requests@2.0.0/dist/bundle.js
+**CDN (server):** https://unpkg.com/alert-message-plugin-flow-requests@2.0.0/dist/deno-bundle.js
 **Library name:** AlertMessageNode
 
 ---
@@ -44,21 +44,29 @@ flows.
 
 ## Output shape
 
-Success (always):
+Success:
 ```json
 {
   "ok": true
 }
 ```
 
-This node always returns `{ ok: true }`. It does not produce any data output
-and does not fail unless `message` is missing.
+This node returns `{ ok: true }` on success. It does not produce any data
+output — it is used for its side effect (alerting / logging).
 
 Failure (missing message — throws before executing):
 
 The node throws with:
-`"Invalid settings. You need to provide a message"` — but only if the
-`message` property evaluates to a falsy value after expression resolution.
+`"Invalid settings. You need to provide a message"` — if the `message`
+property is missing or evaluates to a falsy value after expression resolution.
+
+Failure (runtime alert error):
+```json
+{
+  "ok": false,
+  "error": "message"
+}
+```
 
 ---
 
@@ -69,7 +77,8 @@ The node throws with:
 ```
 
 This node is primarily used for its side effect (alerting / logging), not its
-output. Downstream nodes can safely assume `ok` is `true`.
+output. Downstream nodes can check `{{ steps.alertNode.output.ok }}` to confirm
+it ran.
 
 ---
 
@@ -79,7 +88,7 @@ Show a debug value during development:
 
 ```json
 {
-  "type": "AlertMessage",
+  "type": "AlertMessageNode",
   "name": "debugOutput",
   "setting": {
     "message": "Step output: {{ steps.httpNode.output.data }}"
@@ -91,7 +100,7 @@ Confirm the number of rows returned by a database query:
 
 ```json
 {
-  "type": "AlertMessage",
+  "type": "AlertMessageNode",
   "name": "checkRowCount",
   "setting": {
     "message": "Query returned {{ steps.queryNode.output.data.rowCount }} rows."
@@ -103,7 +112,7 @@ Display an error message when a previous step fails:
 
 ```json
 {
-  "type": "AlertMessage",
+  "type": "AlertMessageNode",
   "name": "showError",
   "setting": {
     "message": "Error: {{ steps.apiNode.output.error }}"

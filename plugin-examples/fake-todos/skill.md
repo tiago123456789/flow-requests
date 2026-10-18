@@ -1,10 +1,10 @@
 # Skill: Fake Todos Plugin
 
 **Name:** FakeTodosNode
-**Version:** 1.1.1
+**Version:** 2.0.0
 **npm package:** fake-todos-plugin
-**CDN (browser):** https://unpkg.com/fake-todos-plugin@1.1.1/dist/bundle.js
-**CDN (server):** https://unpkg.com/fake-todos-plugin@1.1.1/dist/deno-bundle.js
+**CDN (browser):** https://unpkg.com/fake-todos-plugin@2.0.0/dist/bundle.js
+**CDN (server):** https://unpkg.com/fake-todos-plugin@2.0.0/dist/deno-bundle.js
 **Library name:** FakeTodosNode
 
 ---
@@ -51,68 +51,84 @@ conditional properties, and basic REST API interactions.
 | `getAll`     | Retrieve all todos from the fake API. |
 | `getById`    | Fetch a single todo by its numeric ID. Requires `id`. |
 | `deleteById` | Delete a todo by its numeric ID. Requires `id`. |
-| `createTodo` | Create a new todo. Requires `todo`, `completed`, and `userId`. |
+| `createTodo` | Create a new todo. Requires `todo` and `userId`. |
 
 ---
 
 ## Output shape
 
-**`getAll`** — returns the full DummyJSON todos response:
+Every operation returns the standard `{ ok, data }` envelope.
+
+**`getAll`** — the full DummyJSON todos response under `data`:
 ```json
 {
-  "todos": [
-    { "id": 1, "todo": "Do something nice for someone", "completed": false, "userId": 26 }
-  ],
-  "total": 150,
-  "skip": 0,
-  "limit": 30
+  "ok": true,
+  "data": {
+    "todos": [
+      { "id": 1, "todo": "Do something nice for someone", "completed": false, "userId": 26 }
+    ],
+    "total": 150,
+    "skip": 0,
+    "limit": 30
+  }
 }
 ```
 
-**`getById`** — returns a single todo object:
+**`getById`** — a single todo object under `data`:
 ```json
 {
-  "id": 1,
-  "todo": "Do something nice for someone",
-  "completed": false,
-  "userId": 26
+  "ok": true,
+  "data": {
+    "id": 1,
+    "todo": "Do something nice for someone",
+    "completed": false,
+    "userId": 26
+  }
 }
 ```
 
-**`deleteById`** — returns a confirmation:
+**`deleteById`** — a confirmation under `data`:
 ```json
 {
-  "removed": true
+  "ok": true,
+  "data": { "removed": true }
 }
 ```
 
-**`createTodo`** — returns a confirmation:
+**`createTodo`** — a confirmation plus the API response under `data`:
 ```json
 {
-  "created": true
+  "ok": true,
+  "data": { "created": true, "id": 151, "todo": "Review the weekly report", "completed": false, "userId": 5 }
 }
 ```
 
-> Note: `getAll` and `getById` return the raw DummyJSON API response directly
-> (not wrapped in `{ ok, data }`). `deleteById` and `createTodo` return their
-> own confirmation objects.
+**Failure** (network / API error):
+```json
+{
+  "ok": false,
+  "error": "Request failed with status code 404"
+}
+```
 
 ---
 
 ## How to reference output in downstream nodes
 
 ```
-{{ steps.todosNode.output.todos }}              — array of todos (getAll)
-{{ steps.todosNode.output.todos[0].id }}        — first todo ID (getAll)
-{{ steps.todosNode.output.total }}              — total count (getAll)
-{{ steps.todosNode.output.id }}                 — todo ID (getById)
-{{ steps.todosNode.output.todo }}               — todo text (getById)
-{{ steps.todosNode.output.completed }}          — completion status (getById)
-{{ steps.todosNode.output.removed }}            — true after deleteById
-{{ steps.todosNode.output.created }}            — true after createTodo
+{{ steps.todosNode.output.ok }}                 — boolean, true on success
+{{ steps.todosNode.output.data.todos }}         — array of todos (getAll)
+{{ steps.todosNode.output.data.todos[0].id }}   — first todo ID (getAll)
+{{ steps.todosNode.output.data.total }}         — total count (getAll)
+{{ steps.todosNode.output.data.id }}            — todo ID (getById)
+{{ steps.todosNode.output.data.todo }}          — todo text (getById)
+{{ steps.todosNode.output.data.completed }}     — completion status (getById)
+{{ steps.todosNode.output.data.removed }}       — true after deleteById
+{{ steps.todosNode.output.data.created }}       — true after createTodo
+{{ steps.todosNode.output.error }}              — error message on failure
 ```
 
-Use a Loop node to iterate over `{{ steps.todosNode.output.todos }}` when
+Use a Loop node to iterate over `{{ steps.todosNode.output.data.todos }}` when
 processing all results from `getAll`.
 
 ---
@@ -123,7 +139,7 @@ Get all todos and iterate over them:
 
 ```json
 {
-  "type": "FakeTodos",
+  "type": "FakeTodosNode",
   "name": "listTodos",
   "setting": {
     "operation": "getAll"
@@ -135,7 +151,7 @@ Get a specific todo by ID from a previous node's output:
 
 ```json
 {
-  "type": "FakeTodos",
+  "type": "FakeTodosNode",
   "name": "getTodo",
   "setting": {
     "operation": "getById",
@@ -148,7 +164,7 @@ Create a new todo:
 
 ```json
 {
-  "type": "FakeTodos",
+  "type": "FakeTodosNode",
   "name": "addTodo",
   "setting": {
     "operation": "createTodo",
@@ -163,7 +179,7 @@ Delete a todo by ID:
 
 ```json
 {
-  "type": "FakeTodos",
+  "type": "FakeTodosNode",
   "name": "removeTodo",
   "setting": {
     "operation": "deleteById",
@@ -179,15 +195,15 @@ Delete a todo by ID:
 - **Public fake API** — DummyJSON (`dummyjson.com`) is a third-party public
   test service. Data is not persistent; creates and deletes are simulated.
   Do not use this plugin with real or sensitive data.
-- **Output format is not uniform** — `getAll` and `getById` return raw
-  DummyJSON responses (not wrapped in `{ ok, data }`), while `deleteById` and
-  `createTodo` return `{ removed: true }` and `{ created: true }`. Account
-  for this difference when referencing output in downstream nodes.
-- **No error wrapping** — if the DummyJSON API returns an error, the plugin
-  will throw rather than returning `{ ok: false }`. Add error handling in
-  the flow if network failures need to be handled gracefully.
+- **Uniform output envelope** — every operation returns `{ ok, data }`. Check
+  `ok` before reading `data` (or `error` on failure).
+- **Structured errors** — network/API failures return `{ ok: false, error }`
+  instead of throwing, so flows can branch on them. Only missing required
+  fields throw before any request is made.
 - **`id` must be provided** for `getById` and `deleteById` — a missing `id`
   throws `"You need to provide the id"` before any request is made.
+- **`todo` and `userId` must be provided** for `createTodo` — a missing value
+  throws before any request is made.
 - **Conditional fields** — `id`, `todo`, `completed`, and `userId` are only
   visible in the node editor when the matching `operation` is selected.
   Setting them for the wrong operation has no effect.

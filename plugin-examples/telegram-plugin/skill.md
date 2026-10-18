@@ -1,10 +1,10 @@
 # Skill: Telegram Plugin
 
 **Name:** TelegramNode
-**Version:** 1.0.2
+**Version:** 2.0.0
 **npm package:** telegram-plugin-flow-requests
-**CDN (browser):** https://unpkg.com/telegram-plugin-flow-requests@1.0.2/dist/bundle.js
-**CDN (server):** https://unpkg.com/telegram-plugin-flow-requests@1.0.2/dist/deno-bundle.js
+**CDN (browser):** https://unpkg.com/telegram-plugin-flow-requests@2.0.0/dist/bundle.js
+**CDN (server):** https://unpkg.com/telegram-plugin-flow-requests@2.0.0/dist/deno-bundle.js
 **Library name:** TelegramNode
 
 ---
@@ -98,7 +98,7 @@ Send a static notification:
 
 ```json
 {
-  "type": "telegram",
+  "type": "TelegramNode",
   "name": "notify",
   "setting": {
     "botToken": "{{ state.envData.TELEGRAM_BOT_TOKEN }}",
@@ -112,7 +112,7 @@ Send a dynamic message built from a previous node's output:
 
 ```json
 {
-  "type": "telegram",
+  "type": "TelegramNode",
   "name": "alertOnError",
   "setting": {
     "botToken": "{{ state.envData.TELEGRAM_BOT_TOKEN }}",
@@ -126,7 +126,7 @@ Forward an AI-generated summary (possibly long) to a channel:
 
 ```json
 {
-  "type": "telegram",
+  "type": "TelegramNode",
   "name": "sendSummary",
   "setting": {
     "botToken": "{{ state.envData.TELEGRAM_BOT_TOKEN }}",

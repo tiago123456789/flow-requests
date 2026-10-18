@@ -5,7 +5,9 @@
 **npm package:** *(not published — starter template)*
 **CDN (browser):** *(not published)*
 **CDN (server):** *(not published)*
-**Library name:** TemplateNode
+**Library name:** `<CHANGE_VALE_HERE>` — placeholder in `webpack.config.cjs`;
+set your own value when building from this template. It must match the
+`name`/`type` fields in `getConfig()`.
 
 ---
 

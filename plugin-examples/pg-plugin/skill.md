@@ -1,10 +1,10 @@
 # Skill: Postgres Plugin
 
 **Name:** PostgresNode
-**Version:** 1.0.6
+**Version:** 2.0.0
 **npm package:** pg-plugin-flow-requests
-**CDN (browser):** https://unpkg.com/pg-plugin-flow-requests@1.0.6/dist/bundle.js
-**CDN (server):** https://unpkg.com/pg-plugin-flow-requests@1.0.6/dist/deno-bundle.js
+**CDN (browser):** https://unpkg.com/pg-plugin-flow-requests@2.0.0/dist/bundle.js
+**CDN (server):** https://unpkg.com/pg-plugin-flow-requests@2.0.0/dist/deno-bundle.js
 **Library name:** PostgresNode
 
 ---
@@ -121,7 +121,7 @@ Select a user by email:
 
 ```json
 {
-  "type": "postgres",
+  "type": "PostgresNode",
   "name": "getUser",
   "setting": {
     "dbUrl": "{{ state.envData.DATABASE_URL }}",
@@ -135,7 +135,7 @@ Insert a new record and return the generated ID:
 
 ```json
 {
-  "type": "postgres",
+  "type": "PostgresNode",
   "name": "createOrder",
   "setting": {
     "dbUrl": "{{ state.envData.DATABASE_URL }}",
@@ -149,7 +149,7 @@ Count rows matching a condition:
 
 ```json
 {
-  "type": "postgres",
+  "type": "PostgresNode",
   "name": "countActive",
   "setting": {
     "dbUrl": "{{ state.envData.DATABASE_URL }}",

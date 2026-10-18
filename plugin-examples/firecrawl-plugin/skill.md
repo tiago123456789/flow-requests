@@ -1,10 +1,10 @@
 # Skill: Firecrawl Scraper Plugin
 
 **Name:** FirecrawlPlugin
-**Version:** 1.0.0
+**Version:** 1.1.0
 **npm package:** firecrawl-plugin-flow-requests
-**CDN (browser):** https://unpkg.com/firecrawl-plugin-flow-requests@1.0.0/dist/bundle.js
-**CDN (server):** https://unpkg.com/firecrawl-plugin-flow-requests@1.0.0/dist/deno-bundle.js
+**CDN (browser):** https://unpkg.com/firecrawl-plugin-flow-requests@1.1.0/dist/bundle.js
+**CDN (server):** https://unpkg.com/firecrawl-plugin-flow-requests@1.1.0/dist/deno-bundle.js
 **Library name:** FirecrawlPlugin
 
 ---

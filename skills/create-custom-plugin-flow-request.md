@@ -98,11 +98,15 @@ Open `webpack.config.cjs` and replace `<CHANGE_VALE_HERE>` with the exact
 library name you will enter in the UI when installing the plugin. This name
 becomes the global variable that the browser bundle exports.
 
+**This value must be identical to the `name` and `type` fields you set in
+`getConfig()`.** All three — `output.library`, `name`, and `type` — must
+match exactly, or the plugin will fail to load or execute.
+
 ```js
 output: {
   filename: "bundle.js",
   path: path.resolve(__dirname, "dist"),
-  library: "MyPlugin",        // ← choose a unique, PascalCase name
+  library: "MyPlugin",        // ← must match name and type in getConfig()
   libraryTarget: "umd",
 },
 ```
@@ -124,11 +128,14 @@ class MyPlugin extends NodeBase {
 
   // ─── getConfig ────────────────────────────────────────────────────────────
   // Declares the node identity and the form fields the UI will render.
-  // `name` and `type` MUST be identical strings.
+  // `name`, `type`, and `output.library` in webpack.config.cjs MUST all be
+  // the same string. The workflow engine matches the node `type` to the
+  // library name exported by the browser bundle — if any of the three differ,
+  // the plugin will not be found or will fail to execute.
   getConfig(): NodeConfig {
     return {
-      name: "MyPlugin",   // must match `type` below
-      type: "MyPlugin",   // must match `name` above
+      name: "MyPlugin",   // must match `type` below AND output.library in webpack.config.cjs
+      type: "MyPlugin",   // must match `name` above AND output.library in webpack.config.cjs
       description: "Short human-readable description shown in the UI",
 
       // Optional: used by the AI assistant to understand what this node does
@@ -258,8 +265,8 @@ export default MyPlugin;
 
 ```typescript
 interface NodeConfig {
-  name: string;           // must equal type
-  type: string;           // must equal name
+  name: string;           // must equal type AND output.library in webpack.config.cjs
+  type: string;           // must equal name AND output.library in webpack.config.cjs
   description: string;
   ai_description?: string;
   properties: NodeProperty[];
@@ -485,8 +492,9 @@ https://unpkg.com/my-plugin-flow-requests@1.0.0/dist/deno-bundle.js
 
 | Pitfall | Fix |
 |---|---|
-| `name` and `type` in `getConfig()` differ | They must be the same string. |
-| Webpack `library` name doesn't match UI "Library Name" | They must be identical. |
+| `name` and `type` in `getConfig()` differ | They must be the same string, and both must also match `output.library` in `webpack.config.cjs`. |
+| Webpack `library` name doesn't match `name`/`type` in `getConfig()` | All three must be identical: `name`, `type`, and `output.library`. |
+| Webpack `library` name doesn't match UI "Library Name" | The value entered in the UI during installation must also match all three above. |
 | `parseExpression` not called on user input | Dynamic `{{ ... }}` values won't be resolved; always call it on every string setting. |
 | Browser bundle tries to import a Node/Deno-only module | Use `/* webpackIgnore: true */` in a dynamic `import()`. |
 | `deno bundle` fails | Make sure `deno.json` is present and imports are resolvable from the Deno registry. |
@@ -545,7 +553,7 @@ async execute(node: NodeInput): Promise<NodeReturn> {
 
 ## 11. Checklist before publishing
 
-- [ ] `name` === `type` in `getConfig()`.
+- [ ] `name` === `type` === `output.library` in `webpack.config.cjs` (all three must be identical).
 - [ ] `library` in `webpack.config.cjs` matches the intended UI library name.
 - [ ] All string settings pass through `this.parseExpression()`.
 - [ ] Required fields validated before use; throw with a descriptive message.

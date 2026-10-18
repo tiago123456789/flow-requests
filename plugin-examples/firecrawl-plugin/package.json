@@ -1,6 +1,6 @@
 {
   "name": "firecrawl-plugin-flow-requests",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Firecrawl scraper plugin for Flow Requests — scrape any URL and return markdown, HTML, links, or a screenshot via the Firecrawl v2 API.",
   "main": "dist/deno-bundle.js",
   "browser": "dist/bundle.js",

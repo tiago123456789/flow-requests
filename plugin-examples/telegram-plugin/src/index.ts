@@ -12,8 +12,8 @@ class TelegramNode extends NodeBase {
 
   getConfig(): NodeConfig {
     return {
-      name: "telegram",
-      type: "telegram",
+      name: "TelegramNode", // name === type === output.library in webpack.config.cjs
+      type: "TelegramNode", // name === type === output.library in webpack.config.cjs
       description: "Send messages via Telegram Bot API",
       ai_description: "Send a message to a Telegram chat using a bot token",
       properties: [
@@ -104,7 +104,6 @@ class TelegramNode extends NodeBase {
     const hasMoreThan4000digits = message.length > 2000
     let texts = [message];
 
-    console.log(hasMoreThan4000digits)
     if (hasMoreThan4000digits) {
       texts = []
 
@@ -128,7 +127,10 @@ class TelegramNode extends NodeBase {
     }
 
     for (let index = 0; index < texts.length; index += 1) {
-      await this.sendMessage(url, chatId, texts[index] as string)
+      const result = await this.sendMessage(url, chatId, texts[index] as string)
+      if (!result.ok) {
+        return { ok: false, error: result.error }
+      }
     }
 
     return { ok: true }

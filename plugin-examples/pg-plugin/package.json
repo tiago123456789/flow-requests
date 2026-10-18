@@ -1,6 +1,6 @@
 {
   "name": "pg-plugin-flow-requests",
-  "version": "1.0.6",
+  "version": "2.0.0",
   "description": "Postgres plugin for Flow Requests - connect via dbUrl and run parameterized SQL with postgres.js (npm:postgres)",
   "main": "dist/deno-bundle.js",
   "browser": "dist/bundle.js",

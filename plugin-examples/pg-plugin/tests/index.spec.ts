@@ -35,8 +35,8 @@ describe("PostgresNode", () => {
   it("exposes dbUrl (text), query (textarea) and params (textarea, optional)", () => {
     const node = new PostgresNode({});
     const config = node.getConfig();
-    expect(config.name).toBe("postgres");
-    expect(config.type).toBe("postgres");
+    expect(config.name).toBe("PostgresNode");
+    expect(config.type).toBe("PostgresNode");
 
     const dbUrl = config.properties.find((p) => p.name === "dbUrl");
     const query = config.properties.find((p) => p.name === "query");

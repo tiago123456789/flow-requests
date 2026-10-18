@@ -1,10 +1,10 @@
 # Skill: Mailtrap Plugin
 
 **Name:** MailtrapNode
-**Version:** 1.2.0
+**Version:** 2.0.0
 **npm package:** mailtrap-plugin
-**CDN (browser):** https://unpkg.com/mailtrap-plugin@1.2.0/dist/bundle.js
-**CDN (server):** https://unpkg.com/mailtrap-plugin@1.2.0/dist/deno-bundle.js
+**CDN (browser):** https://unpkg.com/mailtrap-plugin@2.0.0/dist/bundle.js
+**CDN (server):** https://unpkg.com/mailtrap-plugin@2.0.0/dist/deno-bundle.js
 **Library name:** MailtrapNode
 
 ---
@@ -67,21 +67,29 @@ Success:
 ```
 
 The plugin does not return Mailtrap's response body. It returns `{ ok: true }`
-when the request completes without throwing.
+when the request completes successfully.
 
 Failure (throws before sending — missing required fields):
 
 The node throws with one of:
 - `"You need to provide a Mailtrap token"`
+- `"You need to provide the Mailtrap API url"`
 - `"You need to provide a subject"`
 - `"You need to provide a text"`
 - `"You need to provide a 'from' email"`
 - `"You need to provide a 'to' email"`
 
-Failure (API-level error — axios throws):
+Failure (API-level error):
+```json
+{
+  "ok": false,
+  "error": "Request failed with status code 401"
+}
+```
 
-An HTTP error from the Mailtrap API will propagate as an uncaught exception.
-Wrap downstream nodes with a Condition node to handle failures gracefully.
+An HTTP error from the Mailtrap API is caught and returned as
+`{ ok: false, error }`, so downstream nodes can branch on
+`{{ steps.sendEmail.output.ok }}` without the flow aborting.
 
 ---
 
@@ -99,7 +107,7 @@ Send a notification email via sandbox:
 
 ```json
 {
-  "type": "MailtrapPlugin",
+  "type": "MailtrapNode",
   "name": "sendEmail",
   "setting": {
     "token": "{{ state.envData.MAILTRAP_TOKEN }}",
@@ -116,7 +124,7 @@ Send an AI-generated summary to a recipient:
 
 ```json
 {
-  "type": "MailtrapPlugin",
+  "type": "MailtrapNode",
   "name": "deliverSummary",
   "setting": {
     "token": "{{ state.envData.MAILTRAP_TOKEN }}",
@@ -133,7 +141,7 @@ Alert on error:
 
 ```json
 {
-  "type": "MailtrapPlugin",
+  "type": "MailtrapNode",
   "name": "errorAlert",
   "setting": {
     "token": "{{ state.envData.MAILTRAP_TOKEN }}",

@@ -172,10 +172,18 @@ class FirecrawlPlugin extends NodeBase {
     // ── Resolve expressions ───────────────────────────────────────────────
     const apiKey = this.parseExpression(setting.apiKey);
     const url = this.parseExpression(setting.url);
-    const format: string = setting.format ?? "markdown";
-    const onlyMainContent = setting.onlyMainContent !== "false"; // defaults true
-    const mobile = setting.mobile === "true";
-    const proxy: string = setting.proxy ?? "auto";
+    const format: string = setting.format
+      ? this.parseExpression(setting.format)
+      : "markdown";
+    const onlyMainContent =
+      setting.onlyMainContent !== undefined
+        ? this.parseExpression(String(setting.onlyMainContent)) !== "false"
+        : true; // defaults true
+    const mobile =
+      this.parseExpression(String(setting.mobile ?? "false")) === "true";
+    const proxy: string = setting.proxy
+      ? this.parseExpression(setting.proxy)
+      : "auto";
 
     // ── Parse numeric fields ───────────────────────────────────────────────
     let waitFor = 0;

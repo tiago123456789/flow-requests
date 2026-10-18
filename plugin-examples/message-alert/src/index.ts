@@ -12,8 +12,8 @@ class AlertMessageNode extends NodeBase {
 
   getConfig(): NodeConfig {
     return {
-      name: "AlertMessage", // Name e type needs to be the same
-      type: "AlertMessage", // Name e type needs to be the same
+      name: "AlertMessageNode", // name === type === output.library in webpack.config.cjs
+      type: "AlertMessageNode", // name === type === output.library in webpack.config.cjs
       description: "Show alert message when execute the node",
       properties: [
         {
@@ -30,12 +30,22 @@ class AlertMessageNode extends NodeBase {
   async execute(node: NodeInput): Promise<NodeReturn> {
     const setting = node.settings;
 
-    if (typeof window !== "undefined") {
-      alert(this.parseExpression(setting.message));
-    } else {
-      console.log(this.parseExpression(setting.message));
+    if (!setting.message) {
+      throw new Error("Invalid settings. You need to provide a message");
     }
-    return { ok: true };
+
+    const message = this.parseExpression(setting.message);
+
+    try {
+      if (typeof window !== "undefined") {
+        alert(message);
+      } else {
+        console.log(message);
+      }
+      return { ok: true };
+    } catch (error: any) {
+      return { ok: false, error: error.message };
+    }
   }
 }
 

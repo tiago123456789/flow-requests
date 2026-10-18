@@ -1,6 +1,6 @@
 {
   "name": "telegram-plugin-flow-requests",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "Telegram plugin for Flow Requests - send messages via Telegram Bot API",
   "main": "dist/deno-bundle.js",
   "browser": "dist/bundle.js",

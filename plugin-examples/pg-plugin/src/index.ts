@@ -17,8 +17,8 @@ class PostgresNode extends NodeBase {
 
   getConfig(): NodeConfig {
     return {
-      name: "postgres", // Name e type needs to be the same
-      type: "postgres", // Name e type needs to be the same
+      name: "PostgresNode", // name === type === output.library in webpack.config.cjs
+      type: "PostgresNode", // name === type === output.library in webpack.config.cjs
       description: "Connect to Postgres and run SQL queries",
       ai_description:
         "Runs a parameterized SQL query against a Postgres database. Use $1, $2 placeholders with params.",
