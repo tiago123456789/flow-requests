@@ -114,7 +114,13 @@ app.get("/mcp-flows", async (c) => {
   if (unauthorized) return unauthorized;
 
   const db = getDb();
-  const rows = await db("mcp_flows").select("*").orderBy("created_at", "desc");
+  const rows = await db("mcp_flows")
+    .select(
+      "mcp_flows.*",
+      "flow_requests.name as flow_name",
+    )
+    .leftJoin("flow_requests", "mcp_flows.flow_request_id", "flow_requests.id")
+    .orderBy("mcp_flows.created_at", "desc");
   return c.json({ tools: rows });
 });
 
