@@ -178,6 +178,11 @@ const ListMcpsModal = ({ isOpen, onClose }: ListMcpsModalProps) => {
                       <p className="text-xs font-mono break-all">
                         flow_request_id: {tool.flow_request_id}
                       </p>
+                      {tool.flow_name && (
+                        <p className="text-xs font-mono break-all">
+                          flow_name: {tool.flow_name}
+                        </p>
+                      )}
                       {schemaEntries.length > 0 ? (
                         <div className="space-y-1">
                           <p className="text-xs font-semibold">schema:</p>

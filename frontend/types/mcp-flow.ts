@@ -11,6 +11,7 @@ export interface McpFlow {
   description: string;
   schema: string | McpFlowSchemaEntry[];
   flow_request_id: string;
+  flow_name: string | null;
   created_at: string;
   updated_at: string;
 }
