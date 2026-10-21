@@ -515,7 +515,7 @@ If a flow uses plugin nodes, the export envelope must include plugin registratio
 
 ### Discovering what a plugin does — `skill.md`
 
-Every Flow Requests plugin ships a `skill.md` file alongside its bundle. This file is the authoritative reference for an AI agent: it describes the plugin's purpose, all node properties, the output shape, expression references, and usage examples.
+Every published Flow Requests plugin has a `skill.md` file alongside its bundle. This file is the authoritative reference for an AI agent: it describes the plugin's purpose, all node properties, the output shape, expression references, and usage examples.
 
 **URL pattern to fetch a plugin's `skill.md`:**
 
@@ -529,8 +529,8 @@ skill.md URL: https://unpkg.com/<package>@<version>/skill.md
 **Example — Telegram plugin:**
 
 ```
-Bundle:    https://unpkg.com/telegram-plugin-flow-requests@1.0.2/dist/bundle.js
-skill.md:  https://unpkg.com/telegram-plugin-flow-requests@1.0.2/skill.md
+Bundle:    https://unpkg.com/telegram-plugin-flow-requests@2.0.0/dist/bundle.js
+skill.md:  https://unpkg.com/telegram-plugin-flow-requests@2.0.0/skill.md
 ```
 
 **When to fetch `skill.md`:**
@@ -540,17 +540,17 @@ Before wiring a plugin node into a flow, always fetch the plugin's `skill.md` to
 - The output shape (what keys are available in `this.state.steps.<name>.output`).
 - Any constraints (rate limits, required env vars, server-only operations, etc.).
 
-### Known community plugins
+### Discovering available plugins
 
-| libraryName | Bundle URL | skill.md URL |
-|---|---|---|
-| `TelegramNode` | `https://unpkg.com/telegram-plugin-flow-requests@1.0.2/dist/bundle.js` | `https://unpkg.com/telegram-plugin-flow-requests@1.0.2/skill.md` |
-| `AiAgentNode` | `https://unpkg.com/ai-agent-plugin-flow-request@1.1.0/dist/bundle.js` | `https://unpkg.com/ai-agent-plugin-flow-request@1.1.0/skill.md` |
-| `AlertMessage` | `https://unpkg.com/alert-message-plugin-flow-requests@1.4.0/dist/bundle.js` | `https://unpkg.com/alert-message-plugin-flow-requests@1.4.0/skill.md` |
-| `PostgresNode` | `https://unpkg.com/pg-plugin-flow-requests@1.0.6/dist/bundle.js` | `https://unpkg.com/pg-plugin-flow-requests@1.0.6/skill.md` |
-| `CodeNode` | `https://unpkg.com/code-plugin-flow-requests@latest/dist/bundle.js` | `https://unpkg.com/code-plugin-flow-requests@latest/skill.md` |
+Before generating a flow that could use a plugin, fetch the current plugin catalog:
 
-Note: The `telegram` type (lowercase) is a legacy alias found in older flows. Always use the exact PascalCase `libraryName` as `type` in new flows.
+```
+https://raw.githubusercontent.com/tiago123456789/flow-requests/refs/heads/master/plugins_available.md
+```
+
+Use the catalog to discover available plugins and their current bundle and `skill.md` URLs. Select a plugin that fits the user's task, then fetch its linked `skill.md` and follow it for the node's exact `libraryName`, settings, and output shape. Use the catalog's bundle URL in the export envelope's `plugins` array; do not rely on remembered plugin versions or invent URLs. The template entry is an unpublished starter and cannot be installed as a plugin.
+
+Always use the exact `libraryName` from the plugin's `skill.md` as the node `type`. The `telegram` type (lowercase) is a legacy alias found in older flows; use `TelegramNode` in new flows.
 
 ---
 
