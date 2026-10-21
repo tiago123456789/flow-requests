@@ -50,6 +50,7 @@ import TYPE_OPTION_MENU from "@/types/type-option-menu";
 import ChatComponent from "./chat-component";
 import * as OptionMenuUtil from "@/utils/option-menu";
 import { parse } from "@/utils/parse-insominia-file.util";
+import { normalizeEnvData } from "@/utils/env-data";
 import {
   DEFAULT_VALUES,
   INITIAL_NODES,
@@ -448,15 +449,16 @@ export default function FlowBuilder({
     }
 
     try {
+      const pastedEnvData = normalizeEnvData(data.envData || []);
       setNodes(data.originalWorkflow.nodes);
       setEdges(data.originalWorkflow.edges || []);
-      setenvData(data.envData || []);
+      setenvData(pastedEnvData);
       onFlowNameChange?.(data.name);
       const nodeNames: Array<string> = data.originalWorkflow.nodes.map(
         (item: { [key: string]: any }) => item?.data?.name,
       );
       setOptionsOfMenu(TYPE_OPTION_MENU.NEW_MANY_NODES, nodeNames);
-      setOptionsOfMenu(TYPE_OPTION_MENU.ENV_DATA, data.envData || []);
+      setOptionsOfMenu(TYPE_OPTION_MENU.ENV_DATA, pastedEnvData);
       toast.success("Flow loaded from clipboard");
     } catch (error) {
       console.error("Failed to load flow from clipboard:", error);
@@ -680,9 +682,10 @@ export default function FlowBuilder({
         setNodes(workflowToEdit.originalWorkflow.nodes);
         setEdges(workflowToEdit.originalWorkflow.edges);
         setWorkflowId(worlflowToEditId);
-        setenvData([...workflowToEdit.envData]);
+        const workflowEnvData = normalizeEnvData(workflowToEdit.envData || []);
+        setenvData(workflowEnvData);
         setOptionsOfMenu(TYPE_OPTION_MENU.NEW_MANY_NODES, nodesName);
-        setOptionsOfMenu(TYPE_OPTION_MENU.ENV_DATA, workflowToEdit.envData);
+        setOptionsOfMenu(TYPE_OPTION_MENU.ENV_DATA, workflowEnvData);
       });
     }
   }, [workflowToEdit]);

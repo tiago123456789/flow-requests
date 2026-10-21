@@ -14,6 +14,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import EnvData from "@/types/env-data";
+import { createEnvDataId, normalizeEnvData } from "@/utils/env-data";
 
 interface EnvDataModalProps {
   isOpen: boolean;
@@ -31,8 +32,11 @@ export function EnvDataModal({
   const [data, setData] = useState<EnvData[]>([]);
 
   const handleAddData = () => {
+    const usedIds = data
+      .map((item) => item.id)
+      .filter((id): id is string => typeof id === "string");
     const newData: EnvData = {
-      id: `data-${Date.now()}`,
+      id: createEnvDataId(usedIds),
       key: "",
       value: "",
     };
@@ -65,7 +69,7 @@ export function EnvDataModal({
   };
 
   useEffect(() => {
-    setData([...envData]);
+    setData(normalizeEnvData(envData));
   }, [envData]);
 
   return (
