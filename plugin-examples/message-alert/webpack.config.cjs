@@ -18,10 +18,7 @@ module.exports = {
   output: {
     filename: "bundle.js",
     path: path.resolve(__dirname, "dist"),
-    library: {
-      name: "AlertMessage",
-      type: "var",
-    },
+    library: "AlertMessageNode",
     libraryTarget: "umd",
   },
 };

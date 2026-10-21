@@ -12,7 +12,7 @@ export default class LoopNode extends NodeBase {
     this.engine = engine;
   }
 
-  getConfig() {
+  override getConfig() {
     return {
       name: "Loop",
       type: "loop",
@@ -30,7 +30,7 @@ export default class LoopNode extends NodeBase {
     };
   }
 
-  async execute(node: NodeInput): Promise<NodeReturn | LinkedList> {
+  override async execute(node: NodeInput): Promise<NodeReturn | LinkedList> {
     const setting = node.settings;
     let source = this.parseExpression(setting.source);
 
@@ -48,10 +48,13 @@ export default class LoopNode extends NodeBase {
     const workflowToRun = {
       nodes: setting.nodes,
       steps: steps,
-      envData: [],
+      envData: Object.entries(this.state.envData || {}).map(([key, value]) => ({
+        key,
+        value,
+      })),
     };
 
-    console.log()
+    console.log();
 
     for (let index = 0; index < source.length; index += 1) {
       const item = source[index];
@@ -61,7 +64,11 @@ export default class LoopNode extends NodeBase {
         ...steps,
       };
 
-      await this.engine.process(workflowToRun, {}, `${stepName}_${index}`);
+      await this.engine.process(
+        workflowToRun,
+        this.state.request || {},
+        `${stepName}_${index}`,
+      );
       this.state.steps = {
         ...this.state.steps,
         ...steps,

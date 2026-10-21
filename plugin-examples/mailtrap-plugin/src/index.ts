@@ -13,8 +13,8 @@ class MailtrapNode extends NodeBase {
 
   getConfig(): NodeConfig {
     return {
-      name: "MailtrapPlugin", // Name e type needs to be the same
-      type: "MailtrapPlugin", // Name e type needs to be the same
+      name: "MailtrapNode", // name === type === output.library in webpack.config.cjs
+      type: "MailtrapNode", // name === type === output.library in webpack.config.cjs
       description: "Mailtrap plugin to allow send email fake inbox",
       properties: [
         {
@@ -59,19 +59,6 @@ class MailtrapNode extends NodeBase {
           required: true,
           default: null,
         },
-        {
-          label: "Repo name",
-          name: "repoName",
-          type: "text",
-          required: false,
-          default: null,
-          conditionShow: [
-            {
-              keyCheck: "operation",
-              valueExpected: "getSpecificRepo",
-            },
-          ],
-        },
       ],
     };
   }
@@ -80,6 +67,10 @@ class MailtrapNode extends NodeBase {
     const setting = node.settings;
     if (!setting.token) {
       throw new Error("You need to provide a Mailtrap token");
+    }
+
+    if (!setting.api) {
+      throw new Error("You need to provide the Mailtrap API url");
     }
 
     if (!setting.subject) {
@@ -98,29 +89,33 @@ class MailtrapNode extends NodeBase {
       throw new Error("You need to provide a 'to' email");
     }
 
-    await axios.post(
-      this.parseExpression(setting.api),
-      {
-        from: {
-          email: this.parseExpression(setting.from),
-          name: "test",
-        },
-        to: [
-          {
-            email: this.parseExpression(setting.to),
+    try {
+      await axios.post(
+        this.parseExpression(setting.api),
+        {
+          from: {
+            email: this.parseExpression(setting.from),
+            name: "test",
           },
-        ],
-        subject: this.parseExpression(setting.subject),
-        text: this.parseExpression(setting.text),
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${this.parseExpression(setting.token)}`,
+          to: [
+            {
+              email: this.parseExpression(setting.to),
+            },
+          ],
+          subject: this.parseExpression(setting.subject),
+          text: this.parseExpression(setting.text),
         },
-      }
-    );
+        {
+          headers: {
+            Authorization: `Bearer ${this.parseExpression(setting.token)}`,
+          },
+        }
+      );
 
-    return { ok: true };
+      return { ok: true };
+    } catch (error: any) {
+      return { ok: false, error: error.message };
+    }
   }
 }
 

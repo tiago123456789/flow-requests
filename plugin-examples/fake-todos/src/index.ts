@@ -13,8 +13,8 @@ class FakeTodosNode extends NodeBase {
 
   getConfig(): NodeConfig {
     return {
-      name: "FakeTodos", // Name e type needs to be the same
-      type: "FakeTodos", // Name e type needs to be the same
+      name: "FakeTodosNode", // name === type === output.library in webpack.config.cjs
+      type: "FakeTodosNode", // name === type === output.library in webpack.config.cjs
       description: "fake todos plugin",
       ai_description: "Node to make api or http request to get fake todos",
       properties: [
@@ -84,10 +84,10 @@ class FakeTodosNode extends NodeBase {
         },
         {
           label: "Is done?",
-          name: "todo",
+          name: "completed",
           type: "select",
           required: false,
-          default: false,
+          default: "false",
           options: [
             {
               label: "Yes",
@@ -124,39 +124,65 @@ class FakeTodosNode extends NodeBase {
 
   async execute(node: NodeInput): Promise<NodeReturn> {
     const setting = node.settings;
-    if (setting.operation == "getAll") {
-      const { data } = await axios.get("https://dummyjson.com/todos");
-      return data;
-    } else if (setting.operation == "getById") {
+    const operation = this.parseExpression(String(setting.operation ?? ""));
+
+    if (operation == "getAll") {
+      try {
+        const { data } = await axios.get("https://dummyjson.com/todos");
+        return { ok: true, data };
+      } catch (error: any) {
+        return { ok: false, error: error.message };
+      }
+    } else if (operation == "getById") {
       if (!setting.id) {
         throw new Error("You need to provide the id");
       }
 
-      const { data } = await axios.get(
-        `https://dummyjson.com/todos/${this.parseExpression(setting.id)}`
-      );
-
-      return data;
-    } else if (setting.operation == "deleteById") {
+      try {
+        const { data } = await axios.get(
+          `https://dummyjson.com/todos/${this.parseExpression(setting.id)}`
+        );
+        return { ok: true, data };
+      } catch (error: any) {
+        return { ok: false, error: error.message };
+      }
+    } else if (operation == "deleteById") {
       if (!setting.id) {
         throw new Error("You need to provide the id");
       }
 
-      await axios.delete(
-        `https://dummyjson.com/todos/${this.parseExpression(setting.id)}`
-      );
+      try {
+        await axios.delete(
+          `https://dummyjson.com/todos/${this.parseExpression(setting.id)}`
+        );
+        return { ok: true, data: { removed: true } };
+      } catch (error: any) {
+        return { ok: false, error: error.message };
+      }
+    } else if (operation == "createTodo") {
+      if (!setting.todo) {
+        throw new Error("You need to provide the todo description");
+      }
+      if (!setting.userId) {
+        throw new Error("You need to provide the userId");
+      }
 
-      return { removed: true };
-    } else if (setting.operation == "createTodo") {
-      await axios.post(`https://dummyjson.com/todos`, {
-        todo: setting.todo,
-        completed: setting.completed,
-        userId: setting.userId,
-      });
-      return { created: true };
+      const completed =
+        this.parseExpression(String(setting.completed ?? "false")) === "true";
+
+      try {
+        const { data } = await axios.post(`https://dummyjson.com/todos`, {
+          todo: this.parseExpression(setting.todo),
+          completed,
+          userId: Number(this.parseExpression(String(setting.userId))),
+        });
+        return { ok: true, data: { created: true, ...data } };
+      } catch (error: any) {
+        return { ok: false, error: error.message };
+      }
     }
 
-    return { ok: true };
+    return { ok: false, error: `Unknown operation: ${operation}` };
   }
 }
 

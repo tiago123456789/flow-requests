@@ -1,6 +1,6 @@
 {
   "name": "mailtrap-plugin",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "Mailtrap plugin to Flow requests",
   "main": "dist/deno-bundle.js",
   "types": "dist/index.d.ts",

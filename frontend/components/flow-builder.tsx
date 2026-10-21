@@ -30,6 +30,8 @@ import {
   Globe,
   List,
   Settings,
+  ClipboardCopy,
+  ClipboardPaste,
 } from "lucide-react";
 import { z } from "zod";
 import { CodeNode } from "./nodes/code-node";
@@ -39,6 +41,7 @@ import { SettingsModal } from "./settings-modal";
 import { AddCurlModal } from "./add-curl-modal";
 import { FlowSidebar } from "./flow-sidebar";
 import { CustomNode } from "./nodes/custom-node";
+import { DeletableEdge } from "./edges/deletable-edge";
 import { useRouter } from "next/navigation";
 import useWorkflow from "@/hooks/useWorkflow";
 import Message from "@/types/message";
@@ -47,6 +50,7 @@ import TYPE_OPTION_MENU from "@/types/type-option-menu";
 import ChatComponent from "./chat-component";
 import * as OptionMenuUtil from "@/utils/option-menu";
 import { parse } from "@/utils/parse-insominia-file.util";
+import { normalizeEnvData } from "@/utils/env-data";
 import {
   DEFAULT_VALUES,
   INITIAL_NODES,
@@ -60,6 +64,10 @@ const validationDataNodeTypes: {
 const initialNodes = INITIAL_NODES;
 const initialEdges: Array<{ [key: string]: any }> = [];
 
+const edgeTypes = {
+  default: DeletableEdge,
+};
+
 interface FlowBuilderProps {
   flowName?: string;
   onFlowNameChange?: (name: string) => void;
@@ -71,6 +79,7 @@ export default function FlowBuilder({
   worlflowToEditId,
   workflowToEdit,
   flowName,
+  onFlowNameChange,
 }: FlowBuilderProps) {
   const router = useRouter();
   const reactFlowWrapper = useRef(null);
@@ -403,6 +412,60 @@ export default function FlowBuilder({
     [selectedNode, setNodes, setEdges],
   );
 
+  const deleteEdge = useCallback(
+    (edgeId: string) => {
+      setEdges((eds) => eds.filter((edge) => edge.id !== edgeId));
+    },
+    [setEdges],
+  );
+
+  const copyFlow = async () => {
+    try {
+      const payload = {
+        name: flowName,
+        envData: [...envData],
+        originalWorkflow: { nodes: [...nodes], edges: [...edges] },
+      };
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      toast.success("Flow JSON copied to clipboard");
+    } catch {
+      toast.error("Failed to copy flow JSON");
+    }
+  };
+
+  const pasteFlow = async () => {
+    let data: any;
+    try {
+      const text = await navigator.clipboard.readText();
+      data = JSON.parse(text);
+    } catch {
+      toast.error("Invalid flow JSON in clipboard");
+      return;
+    }
+
+    if (!data?.originalWorkflow?.nodes) {
+      toast.error("Invalid flow JSON in clipboard");
+      return;
+    }
+
+    try {
+      const pastedEnvData = normalizeEnvData(data.envData || []);
+      setNodes(data.originalWorkflow.nodes);
+      setEdges(data.originalWorkflow.edges || []);
+      setenvData(pastedEnvData);
+      onFlowNameChange?.(data.name);
+      const nodeNames: Array<string> = data.originalWorkflow.nodes.map(
+        (item: { [key: string]: any }) => item?.data?.name,
+      );
+      setOptionsOfMenu(TYPE_OPTION_MENU.NEW_MANY_NODES, nodeNames);
+      setOptionsOfMenu(TYPE_OPTION_MENU.ENV_DATA, pastedEnvData);
+      toast.success("Flow loaded from clipboard");
+    } catch (error) {
+      console.error("Failed to load flow from clipboard:", error);
+      toast.error("Failed to load flow from clipboard");
+    }
+  };
+
   const saveWorkflow = async (isTest: boolean = false) => {
     if (nodes.length == 0) {
       toast.error("You need at least one node to start the Worflow");
@@ -619,9 +682,10 @@ export default function FlowBuilder({
         setNodes(workflowToEdit.originalWorkflow.nodes);
         setEdges(workflowToEdit.originalWorkflow.edges);
         setWorkflowId(worlflowToEditId);
-        setenvData([...workflowToEdit.envData]);
+        const workflowEnvData = normalizeEnvData(workflowToEdit.envData || []);
+        setenvData(workflowEnvData);
         setOptionsOfMenu(TYPE_OPTION_MENU.NEW_MANY_NODES, nodesName);
-        setOptionsOfMenu(TYPE_OPTION_MENU.ENV_DATA, workflowToEdit.envData);
+        setOptionsOfMenu(TYPE_OPTION_MENU.ENV_DATA, workflowEnvData);
       });
     }
   }, [workflowToEdit]);
@@ -665,18 +729,33 @@ export default function FlowBuilder({
                 duplicateNode: () => duplicateNode(node.id),
               },
             }))}
-            edges={edges}
+            edges={edges.map((edge) => ({
+              ...edge,
+              data: {
+                ...edge.data,
+                onDelete: deleteEdge,
+              },
+            }))}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={onNodeClick}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             fitView
             className="w-full h-full"
           >
             <Controls />
             <Background />
             <Panel position="top-right" className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={copyFlow}>
+                <ClipboardCopy className="mr-2 h-4 w-4" />
+                Copy Flow
+              </Button>
+              <Button size="sm" variant="outline" onClick={pasteFlow}>
+                <ClipboardPaste className="mr-2 h-4 w-4" />
+                Paste Flow
+              </Button>
               <Button
                 size="sm"
                 variant="outline"

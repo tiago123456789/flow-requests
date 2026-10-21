@@ -1,6 +1,6 @@
 {
   "name": "alert-message-plugin-flow-requests",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "description": "Alert message plugin to Flow requests",
   "main": "dist/deno-bundle.js",
   "browser": "dist/bundle.js",

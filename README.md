@@ -1,29 +1,32 @@
 # Flow Requests
 
-Simplify your API testing and workflow automation
+Build, test, and reuse API workflows—with support for AI agents through MCP.
 
-Flow Request revolutionizes how you handle complex API workflows. Whether you're a developer or QA engineer, our platform makes testing intricate flows effortless.
+Flow Requests is a visual workflow builder for API testing and automation. Connect requests into reusable flows, extend them with plugins, and run automations from MCP-compatible AI agents.
 
 ## Features
 
-- **Seamless Integrations**: Import collections from popular tools like Insomnia, Postman, Bruno, and Apidog. Bring your existing API setups directly into our builder.
+- **Visual workflow builder**: Connect API requests and workflow nodes in a drag-and-drop canvas to build and test multi-step automations.
 
-- **No-Code Simplicity**: Collect and organize endpoints just like no-code platforms such as N8n. Build complex workflows without writing a single line of code.
+- **Import API collections**: Bring existing requests into Flow Requests from Insomnia, Postman, Bruno, and Apidog.
 
-- **Visual Workflow Builder**: Build complex API workflows with an intuitive drag-and-drop interface.
+- **MCP server**: Register a saved automation as an MCP tool. An AI agent can call the tool with its declared inputs and execute the flow through the Flow Requests MCP server.
 
-- **Import Collections**: Import from Insomnia, Postman, Bruno, and Apidog seamlessly.
+- **Connect AI agents**: Connect MCP-compatible clients—including Codex, Claude Code, OpenCode, and others—to run registered automations from an agent conversation.
 
-- **Plugins**: Extend functionality with plugins you can create for your needs.
+- **Convert automations into MCP tools**: Give each tool a name, description, and input schema, then make it available to connected MCP clients.
 
-- **Real-time Testing**: Test workflows instantly with live execution and logging.
+- **Copy and paste flows**: Copy a flow and paste it into a new one to reuse its nodes, connections, and environment settings instead of rebuilding the workflow.
 
-- **Export & Import**: Save and share workflows with JSON export/import functionality.
+- **Extensible plugins**: Add custom nodes to connect external services or implement workflow-specific logic.
 
-- **We don't store your data**: All Flows will run in your machine, to be more precise in your browser.
+- **Run and inspect**: Execute flows and review their results to test API behavior and troubleshoot workflows.
 
-- **API Integration**: Connect to any REST API with comprehensive request options.
+- **Reusable and shareable workflows**: Save flows and export or import them as JSON.
 
-- **No-Code Automation**: Automate complex flows without writing code, like N8n.
+## AI agent skills
 
-- **Combine Collections**: Merge different API collections to create comprehensive automations.
+Use the included skills to help AI agents work with Flow Requests:
+
+- [Create a flow (automation)](skills/create-new-flow-flow-requests.md) — instructions for generating valid flows, including browser and export formats, nodes, expressions, and plugins.
+- [Create a custom plugin](skills/create-custom-plugin-flow-request.md) — instructions for building, testing, and publishing custom Flow Requests nodes.
