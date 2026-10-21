@@ -1,15 +1,15 @@
 # Skill: Create a New Flow in Flow Requests
 
 **Name:** create-new-flow-flow-requests
-**Description:** Reference for AI agents to generate valid Flow Requests automation flows in JSON format. Covers every native node type, the expression syntax, the dual data model, plugin nodes, and real-world composition patterns.
+**Description:** Reference for AI agents to generate valid Flow Requests automation flows in JSON format. Covers choosing the browser or export format, every native node type, the expression syntax, the dual data model, plugin nodes, and real-world composition patterns.
 
 ---
 
 ## 1. What is a Flow?
 
-A **flow** is a JSON object that describes an automation workflow. When imported into Flow Requests (or executed by `run-flow-request-remotely`), the **WorkflowEngine** reads the `nodes` array as a linked list, instantiates each node in order, and passes accumulated `state` from node to node.
+A **flow** is a JSON object that describes an automation workflow. In the browser, users paste or edit a visual graph and save or test it; the UI compiles that graph into execution nodes. `run-flow-request-remotely` and saved/exported flows use the compiled node list, which the **WorkflowEngine** reads as a linked list and executes in order while passing accumulated `state` between nodes.
 
-Flows are stored in an IndexedDB database on the client and are exported/imported as a top-level JSON envelope:
+Saved flows are stored in an IndexedDB database on the client and can be exported/imported as a top-level JSON envelope:
 
 ```json
 {
@@ -19,11 +19,49 @@ Flows are stored in an IndexedDB database on the client and are exported/importe
 ```
 
 - **`plugins`** — list of custom plugin registrations needed by the flows in this file.
-- **`flows`** — list of flow objects.
+- **`flows`** — list of saved flow objects.
+
+### Choose the output format before generating a flow
+
+Before generating a flow, ask the user: **“Will you run this flow in the Flow Requests browser UI?”** If the user has already specified where they will run it, use that answer without asking again.
+
+- **No — not in the browser:** Use the existing export format: a top-level object with `plugins` and `flows` arrays. Put the saved flow object inside `flows`.
+- **Yes — paste into the browser flow builder:** Return the clipboard payload directly, with exactly these top-level fields:
+
+```json
+{
+  "name": "My Flow",
+  "envData": [],
+  "originalWorkflow": {
+    "nodes": [
+      {
+        "id": "1",
+        "type": "start",
+        "position": { "x": 250, "y": 100 },
+        "data": {
+          "label": "Start",
+          "name": "trigger_start_1",
+          "isCustomNode": false
+        },
+        "width": 115,
+        "height": 90,
+        "selected": false,
+        "positionAbsolute": { "x": 250, "y": 100 },
+        "dragging": false
+      }
+    ],
+    "edges": []
+  }
+}
+```
+
+The browser paste handler expects `name`, `envData`, and `originalWorkflow` at the root. Do not wrap this payload in `data`, add a saved-flow `id`, or include a root-level compiled execution list (`nodes` / `data.nodes`). Put the complete visual graph for the requested flow in `originalWorkflow.nodes` and `originalWorkflow.edges`. When the user saves or tests the pasted flow, the browser compiles that graph into execution nodes. Use the requested flow's actual name, settings, IDs, and expressions rather than copying the example values.
 
 ---
 
-## 2. Top-level flow object
+## 2. Saved/export flow object (not the browser clipboard payload)
+
+This is the persisted flow-record shape. Export files place it inside the root `flows` array. The browser clipboard payload in Section 1 is intentionally different: it contains only `name`, `envData`, and `originalWorkflow` at the root; the browser builds the execution list from that visual graph when saved or tested.
 
 ```json
 {
@@ -45,10 +83,10 @@ Flows are stored in an IndexedDB database on the client and are exported/importe
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | string | yes | Unique identifier for the flow within the export file. Use a sequential number string. |
+| `id` | string | yes | Unique identifier for the flow (and within the export file when using the export envelope). Use a number string. |
 | `data.name` | string | yes | Human-readable display name shown in the UI sidebar. |
-| `data.triggerEvent` | string | no | Always `"start"` when present. Can be omitted. |
-| `data.workflowId` | string | no | Same value as `id`. Present in flows saved by the remote runner. |
+| `data.triggerEvent` | string | no | Usually `"start"` for flows started manually. |
+| `data.workflowId` | string | no | Workflow identifier used by some saved flows; usually the same value as `id`. |
 | `data.contextVariables` | array | yes | Always `[]` (not used yet). |
 | `data.envData` | array | yes | List of environment variable entries `{ key, value }`. |
 | `data.nodes` | array | yes | **The execution node list** — what the engine actually runs. |
@@ -64,22 +102,24 @@ Reference in expressions: `{{this.state.envData.MY_VAR}}`
 
 ---
 
-## 3. The two parallel representations
+## 3. Browser canvas graph and saved execution representation
 
-Every flow has **two representations** that must be kept in sync:
+The browser clipboard payload contains the visual canvas graph only. Its `originalWorkflow.nodes` are the React Flow nodes and `originalWorkflow.edges` are their connections. The browser uses this graph to render the canvas, then compiles it into the execution representation when the flow is saved or tested.
+
+Saved/export flow objects contain both representations:
 
 | Representation | Field | Used by |
 |---|---|---|
-| Execution list | `data.nodes` | WorkflowEngine (runs the flow) |
-| Visual graph | `data.originalWorkflow` | React Flow (renders the canvas) |
+| Execution list | `data.nodes` | WorkflowEngine (runs a saved/exported flow) |
+| Visual graph | `data.originalWorkflow` | React Flow (renders a saved/exported flow) |
 
-When an agent generates a flow it **must produce both**.
+When generating a saved/export flow, keep both representations synchronized. When generating a browser clipboard payload, provide the visual graph only; do not generate `data.nodes` or wrap the payload in `data`.
 
 ---
 
-## 4. Execution node list (`data.nodes`)
+## 4. Execution node list (`data.nodes` in saved/export flows)
 
-The engine iterates `data.nodes` sequentially. Each node is a plain object:
+For saved/export flow objects, the engine iterates `data.nodes` sequentially. Each execution node is a plain object:
 
 ```json
 {
@@ -264,9 +304,9 @@ Plugin nodes use the plugin's **library name** as `type`. The `setting` object c
 
 ---
 
-## 7. Visual graph (`data.originalWorkflow`)
+## 7. Visual graph (`originalWorkflow` in browser clipboard payloads)
 
-The `originalWorkflow` is what React Flow renders. It contains `nodes` (visual) and `edges` (connections).
+The browser clipboard payload's root `originalWorkflow` is what React Flow renders. In saved/export flow objects the same graph is stored at `data.originalWorkflow`. It contains `nodes` (visual) and `edges` (connections). Browser-paste flows are built from these visual nodes and edges; the UI compiles their settings into execution nodes when saved or tested.
 
 ### Visual node
 
@@ -545,7 +585,9 @@ The CodeNode plugin runs JavaScript in a `node:vm` sandbox and accepts a `data` 
 
 ---
 
-## 11. Complete minimal flow template
+## 11. Complete minimal saved/export flow template
+
+This template is for the non-browser export format. It is not the browser clipboard payload; use the root-level `name`, `envData`, and `originalWorkflow` structure from Section 1 when the user will paste into the browser. The worked examples below also show the saved/export representation so their execution-node settings are explicit.
 
 ```json
 {
@@ -590,7 +632,9 @@ The CodeNode plugin runs JavaScript in a `node:vm` sandbox and accepts a `data` 
 
 ## 12. Worked examples
 
-### Example A — Simple GET then loop-forward each item
+Examples A–D below use the saved/export representation to show the compiled execution settings alongside the visual graph. For browser paste, use the corresponding visual-node `data` and edge structures, and return only the clipboard payload from Section 1.
+
+### Example A — Saved/export flow: simple GET then loop-forward each item
 
 ```json
 {
@@ -894,30 +938,31 @@ Execution nodes:
 |---|---|
 | Using `step.nodeName` instead of `steps.nodeName` | Always `this.state.steps.<name>` |
 | Forgetting `this.state.` prefix in expressions | All state paths start with `this.state.` |
-| Omitting `input: {}` and `output: {}` from execution nodes | Always include them, even empty |
-| Node `name` in execution list does not match `data.name` in visual node | Both must be identical |
-| Placing loop/condition children in top-level `data.nodes` | Children go inside `setting.nodes` / `setting.success` / `setting.fail` only |
-| Not registering a plugin in `plugins` when using it | Every plugin `type` used in a flow needs a matching `plugins` entry |
-| Forgetting `properties` in plugin `setting` | Plugin nodes need the full `properties` array in `setting` for the UI to re-render the form |
-| Not syncing `data.nodes` and `originalWorkflow` | Both representations must describe the same flow |
+| Omitting `input: {}` and `output: {}` from saved/export execution nodes | Always include them, even empty |
+| Node `name` in saved/export execution list does not match `data.name` in visual node | Both must be identical |
+| Placing loop/condition children in top-level saved/export `data.nodes` | Children go inside `setting.nodes` / `setting.success` / `setting.fail` only |
+| Not registering a plugin in `plugins` when using the export envelope | Every plugin `type` used in an export-envelope flow needs a matching `plugins` entry |
+| Forgetting `properties` in a saved/export plugin `setting` | Plugin nodes need the full `properties` array in `setting` for the UI to re-render the form |
+| Not syncing `data.nodes` and `data.originalWorkflow` in a saved/export flow | Both representations must describe the same flow |
 | Wrong edge `id` format | Format: `reactflow__edge-<sourceId>-<targetId>` |
 | Hardcoding tokens, passwords, DB URLs | Store sensitive values in `envData` and reference via `{{this.state.envData.KEY}}` |
-| Missing `"body": [{}]` and `"headers": [{}]` in plugin setting | Always include them even when empty |
+| Missing `"body": [{}]` and `"headers": [{}]` in saved/export plugin settings | Always include them even when empty |
 
 ---
 
 ## 14. Checklist before delivering a generated flow
 
-- [ ] `data.nodes` starts with a `start` node as the first entry.
+- [ ] Ask whether the user will run the flow in the Flow Requests browser UI unless they already specified it.
+- [ ] For browser paste, return exactly the root-level `name`, `envData`, and `originalWorkflow` fields; do not include the saved-flow `id`, a `data` wrapper, or compiled `nodes` list.
+- [ ] For non-browser export, use the top-level `plugins` / `flows` envelope and include the saved flow's execution list and visual graph.
+- [ ] In saved/export flows, `data.nodes` starts with a `start` node as the first entry.
 - [ ] Every node has a unique `name` within the flow.
 - [ ] Every expression uses the `this.state.` prefix inside `{{ }}`.
-- [ ] Loop children are only in `setting.nodes`, not in top-level `data.nodes`.
-- [ ] Condition children are only in `setting.success`/`setting.fail`.
-- [ ] `originalWorkflow.nodes` has a visual entry for every top-level execution node.
-- [ ] Loop and condition children appear in `originalWorkflow` as visual nodes connected via special edges.
+- [ ] In saved/export execution lists, loop children are only in `setting.nodes`, not in top-level `data.nodes`; condition children are only in `setting.success`/`setting.fail`.
+- [ ] The visual graph has a node for every step, including loop/condition children, with edges that encode the normal, loop, true, and false paths.
 - [ ] Every edge has the correct `id` format.
-- [ ] Every plugin type used has a matching entry in the root `plugins` array.
+- [ ] For export-envelope output, every plugin type used has a matching entry in the root `plugins` array.
 - [ ] Sensitive values are in `envData`, not hardcoded.
-- [ ] `input: {}` and `output: {}` are present on every execution node.
-- [ ] Plugin nodes include `properties`, `label`, `type`, `description`, `color`, `bgColor`, `borderColor`, `headers`, `body`, and `name` inside `setting`.
+- [ ] `input: {}` and `output: {}` are present on every execution node in saved/export flows.
+- [ ] Plugin execution nodes include `properties`, `label`, `type`, `description`, `color`, `bgColor`, `borderColor`, `headers`, `body`, and `name` inside `setting`; browser clipboard plugin nodes use the corresponding visual-node `data` shape.
 - [ ] Node positions in `originalWorkflow` follow the vertical layout guide (y increments of ~150).
