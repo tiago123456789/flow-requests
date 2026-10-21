@@ -59,6 +59,7 @@ export default class HttpRequestNode extends NodeBase {
     setting.url = this.parseExpression(setting.url);
 
     const numberRegex = /([0=9])+/;
+    const bodyNumberRegex = /^\d+$/;
     const requestBody: { [key: string]: any } = {};
     for (let index = 0; index < setting.body.length; index += 1) {
       const item = setting.body[index];
@@ -68,8 +69,8 @@ export default class HttpRequestNode extends NodeBase {
 
       let value = this.parseExpression(item.value);
       try {
-        if (numberRegex.test(item.value)) {
-          requestBody[item.key] = new String(value);
+        if (bodyNumberRegex.test(value)) {
+          requestBody[item.key] = `${value}`;
         } else {
           requestBody[item.key] = JSON.parse(value);
         }
