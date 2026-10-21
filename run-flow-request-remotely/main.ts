@@ -8,8 +8,11 @@ import { createLoggedTool, start } from "./tools/index.ts";
 import { syncMcpFlowTools } from "./tools/mcp-flows-registry.ts";
 import { validateMcpFlowPayload } from "./utils/validate-mcp-flow.util.ts";
 import { buildZodRawShape } from "./utils/build-zod-schema.util.ts";
+import { getFlowRequestExecutionData } from "./utils/flow-request-data.util.ts";
+import { deleteFlowRequest } from "./utils/delete-flow-request.util.ts";
 
 const app = new Hono();
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 app.use("/*", cors());
 
@@ -61,15 +64,45 @@ app.post("/flow-requests", async (c) => {
   if (existing) {
     await db("flow_requests").where("id", existing.id).update({
       data: JSON.stringify(body || {}),
+      flow: body?.flow ? JSON.stringify(body.flow) : existing.flow,
+      description: body?.description || existing.description,
+      schema: body?.schema ? JSON.stringify(body.schema) : existing.schema,
     });
     return c.json({ id: existing.id, updated: true }, 200);
   }
 
   const result = await db("flow_requests")
-    .insert({ name, data: JSON.stringify(body || {}) })
+    .insert({
+      name,
+      data: JSON.stringify(body || {}),
+      flow: body?.flow ? JSON.stringify(body.flow) : null,
+      description: body?.description || null,
+      schema: JSON.stringify(body?.schema || []),
+    })
     .returning("id");
 
   return c.json({ id: result[0].id, created: true }, 201);
+});
+
+app.delete("/flow-requests/:id", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  const id = c.req.param("id");
+  if (!UUID_PATTERN.test(id)) {
+    return c.json({ error: "id must be a UUID" }, 400);
+  }
+
+  const deleted = await deleteFlowRequest(id);
+  if (!deleted) return c.json({ error: "flow_request not found" }, 404);
+
+  const syncResult = await syncMcpFlowTools(mcpServer, createLoggedTool);
+  return c.json({
+    deleted: true,
+    id: deleted.id,
+    mcp_flows_deleted: deleted.mcpFlowsDeleted,
+    sync: syncResult,
+  });
 });
 
 app.post("/mcp-flows", async (c) => {
@@ -217,13 +250,13 @@ app.post("/webhooks/:id_flow_request/run", async (c) => {
   const requestBody = await c.req.json().catch(() => ({}));
   const requestQuery = Object.fromEntries(new URL(c.req.url).searchParams);
 
-  const flowData = flowRequest.data;
+  const flowData = getFlowRequestExecutionData(flowRequest);
   const workflowEngine = await run(
     requestHeaders,
     requestBody,
     requestQuery,
-    flowData.plugins || [],
-    flowData.flow || { data: { nodes: [], envData: [] } },
+    flowData.plugins,
+    flowData.flow,
   );
 
   return c.json({

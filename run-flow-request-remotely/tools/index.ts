@@ -2,6 +2,9 @@ import getFlowsCreated from "./get-flows-created.tool.ts"
 import getWebhooks from "./get-webhooks.tool.ts" 
 import runFlowRequest from "./run-flow-request.tool.ts" 
 import saveFlowRequest from "./save-flow-request.tool.ts"
+import saveFlowRequestAsTool from "./save-flow-request-as-tool.tool.ts"
+import updateFlowRequestAsTool from "./update-flow-request-as-tool.tool.ts"
+import deleteFlowRequest from "./delete-flow-request.tool.ts"
 import refreshMcpFlows from "./refresh-mcp-flows.tool.ts"
 import { syncMcpFlowTools } from "./mcp-flows-registry.ts"
 import { McpServer } from "npm:@modelcontextprotocol/sdk/server/mcp.js";
@@ -37,6 +40,9 @@ export async function start(mcpServer: McpServer) {
     getWebhooks(mcpServer, createLoggedTool)
     runFlowRequest(mcpServer, createLoggedTool)
     saveFlowRequest(mcpServer, createLoggedTool)
+    saveFlowRequestAsTool(mcpServer, createLoggedTool)
+    updateFlowRequestAsTool(mcpServer, createLoggedTool)
+    deleteFlowRequest(mcpServer, createLoggedTool)
     refreshMcpFlows(mcpServer, createLoggedTool)
     await syncMcpFlowTools(mcpServer, createLoggedTool)
 }

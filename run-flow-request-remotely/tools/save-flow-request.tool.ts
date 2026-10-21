@@ -21,7 +21,7 @@ export default function (mcpServer: McpServer, createLoggedTool: any) {
           };
         }
 
-        const payload = { ...(data || {}), name: trimmedName };
+        const payload: Record<string, any> = { ...(data || {}), name: trimmedName };
         const db = getDb();
         const existing = await db("flow_requests")
           .where("name", trimmedName)
@@ -30,6 +30,9 @@ export default function (mcpServer: McpServer, createLoggedTool: any) {
         if (existing) {
           await db("flow_requests").where("id", existing.id).update({
             data: JSON.stringify(payload),
+            flow: payload.flow ? JSON.stringify(payload.flow) : existing.flow,
+            description: payload.description || existing.description,
+            schema: payload.schema ? JSON.stringify(payload.schema) : existing.schema,
           });
           return {
             content: [
@@ -42,7 +45,13 @@ export default function (mcpServer: McpServer, createLoggedTool: any) {
         }
 
         const result = await db("flow_requests")
-          .insert({ name: trimmedName, data: JSON.stringify(payload) })
+          .insert({
+            name: trimmedName,
+            data: JSON.stringify(payload),
+            flow: payload.flow ? JSON.stringify(payload.flow) : null,
+            description: payload.description || null,
+            schema: JSON.stringify(payload.schema || []),
+          })
           .returning("id");
 
         return {

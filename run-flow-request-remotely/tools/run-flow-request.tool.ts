@@ -2,6 +2,7 @@ import { getDb } from "../db/knex.ts";
 import { McpServer } from "npm:@modelcontextprotocol/sdk/server/mcp.js";
 import z from "npm:zod";
 import { run } from "../utils/execute-flow.util.ts";
+import { getFlowRequestExecutionData } from "../utils/flow-request-data.util.ts";
 
 export default function (mcpServer: McpServer, createLoggedTool: any) {
     mcpServer.tool(
@@ -25,13 +26,14 @@ export default function (mcpServer: McpServer, createLoggedTool: any) {
                 }
             }
 
-            const flowData = flowRequest.data;
+
+            const flowData = getFlowRequestExecutionData(flowRequest);
             await run(
                 body,
                 body,
                 body,
-                flowData.plugins || [],
-                flowData.flow || { data: { nodes: [], envData: [] } },
+                flowData.plugins,
+                flowData.flow,
             );
 
             return {

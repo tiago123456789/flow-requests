@@ -1,9 +1,10 @@
 import z from "npm:zod";
 
 export type McpFlowField = {
-  key: string;
+  key?: string;
+  name?: string;
   type: string;
-  isRequired: boolean;
+  isRequired?: boolean;
   description?: string;
 };
 
@@ -15,6 +16,11 @@ export function buildZodRawShape(
   const shape: Record<string, any> = {};
 
   for (const field of fields) {
+    const key = field.name || field.key;
+    if (!key) {
+      throw new Error("Each schema entry must have a name or key.");
+    }
+
     const t = String(field.type).toLowerCase().trim();
     let zodType: any;
 
@@ -63,18 +69,18 @@ export function buildZodRawShape(
         break;
       default:
         throw new Error(
-          `Unsupported zod type "${field.type}" for key "${field.key}". Supported: string, number, boolean, integer/int, bigint, uuid, email, url, datetime, date, array, object, any/unknown, json.`,
+          `Unsupported zod type "${field.type}" for key "${key}". Supported: string, number, boolean, integer/int, bigint, uuid, email, url, datetime, date, array, object, any/unknown, json.`,
         );
     }
 
-    const describeText = field.description || field.key;
+    const describeText = field.description || key;
     zodType = zodType.describe(describeText);
 
-    if (!field.isRequired) {
+    if (field.isRequired === false) {
       zodType = zodType.optional();
     }
 
-    shape[field.key] = zodType;
+    shape[key] = zodType;
   }
 
   return shape;

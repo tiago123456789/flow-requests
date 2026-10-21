@@ -1,6 +1,7 @@
 import { getDb } from "../db/knex.ts";
 import { run } from "../utils/execute-flow.util.ts";
 import { buildZodRawShape } from "../utils/build-zod-schema.util.ts";
+import { getFlowRequestExecutionData } from "../utils/flow-request-data.util.ts";
 import type { McpServer } from "npm:@modelcontextprotocol/sdk/server/mcp.js";
 import type { RegisteredTool } from "npm:@modelcontextprotocol/sdk/server/mcp.js";
 
@@ -47,7 +48,7 @@ export async function syncMcpFlowTools(
     const description = row.description as string;
 
     const handler = createLoggedTool(name, async (body: Record<string, any>) => {
-      console.log(body)
+      console.log("body =>", body)
       const dbInner = getDb();
       const flowRequest = await dbInner("flow_requests")
         .where("id", flowRequestId)
@@ -63,13 +64,18 @@ export async function syncMcpFlowTools(
         };
       }
 
-      const flowData = flowRequest.data;
+      console.log("@@@@@@@@@@@@@@@@@@@@")
+      console.log("@@@@@@@@@@@@@@@@@@@@")
+      console.log("@@@@@@@@@@@@@@@@@@@@")
+      console.log("@@@@@@@@@@@@@@@@@@@@")
+
+      const flowData = getFlowRequestExecutionData(flowRequest);
       const workflowEngine = await run(
         body || {},
         body || {},
         body || {},
-        flowData.plugins || [],
-        flowData.flow || { data: { nodes: [], envData: [] } },
+        flowData.plugins,
+        flowData.flow,
       );
 
       return {

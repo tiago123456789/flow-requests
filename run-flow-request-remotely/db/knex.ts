@@ -20,13 +20,48 @@ export async function initDatabase() {
       CREATE TABLE flow_requests (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         name varchar(255),
-        data JSONB
+        data JSONB,
+        flow JSONB,
+        description TEXT,
+        schema JSONB NOT NULL DEFAULT '[]'::jsonb
       )
     `);
     console.log("Table flow_requests created successfully");
   } else {
     console.log("Table flow_requests already exists");
   }
+
+  // Add the explicit flow/tool metadata columns to databases created by older
+  // versions, while keeping `data` available for backward compatibility.
+  if (!(await database.schema.hasColumn("flow_requests", "flow"))) {
+    await database.schema.alterTable("flow_requests", (table) => {
+      table.jsonb("flow");
+    });
+  }
+  if (!(await database.schema.hasColumn("flow_requests", "description"))) {
+    await database.schema.alterTable("flow_requests", (table) => {
+      table.text("description");
+    });
+  }
+  if (!(await database.schema.hasColumn("flow_requests", "schema"))) {
+    await database.schema.alterTable("flow_requests", (table) => {
+      table.jsonb("schema").notNullable().defaultTo(database.raw(`'[]'::jsonb`));
+    });
+  }
+
+  await database("flow_requests")
+    .whereNull("flow")
+    .whereNotNull("data")
+    .update({ flow: database.raw("data->'flow'") });
+  await database("flow_requests")
+    .whereNull("description")
+    .whereNotNull("data")
+    .update({ description: database.raw("data->>'description'") });
+  await database("flow_requests")
+    .whereRaw("schema = '[]'::jsonb")
+    .whereNotNull("data")
+    .whereRaw("jsonb_exists(data, 'schema')")
+    .update({ schema: database.raw("data->'schema'") });
 
   const mcpFlowsExists = await database.schema.hasTable("mcp_flows");
   if (!mcpFlowsExists) {
