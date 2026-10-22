@@ -24,6 +24,10 @@ Flow Requests is a visual workflow builder for API testing and automation. Conne
 
 - **Reusable and shareable workflows**: Save flows and export or import them as JSON.
 
+## Remote workflow runner
+
+Run saved Flow Requests workflows through a remote HTTP and MCP service. See the [remote runner documentation](run-flow-request-remotely/README.MD) for its MCP tools, configuration, and Docker build and usage instructions.
+
 ## AI agent skills
 
 Use the included skills to help AI agents work with Flow Requests:
