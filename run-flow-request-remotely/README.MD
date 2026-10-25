@@ -62,6 +62,28 @@ curl -H 'api-key: replace-with-a-secret-key' \
 
 Connect an MCP-compatible client to the Streamable HTTP endpoint `http://localhost:7000/mcp` and configure it to send the `api-key` header with the same value as `API_KEY`.
 
+### Connect from OpenCode
+
+OpenCode can connect to the remote runner as a remote MCP server:
+
+1. Make sure the Docker host is reachable from the computer running OpenCode on port `7000`.
+2. Start the OpenCode MCP setup command:
+
+   ```bash
+   opencode mcp add
+   ```
+
+3. Enter a name for the server, such as `flow-requests`, and choose **Remote** as the connection type.
+4. Enter the server URL below, replacing the host and API key with the values for your deployment:
+
+   ```text
+   http://ip_or_domain_where_docker_running:7000/mcp?api-key=value_from_api_key
+   ```
+
+   For example, if OpenCode runs on the same computer as Docker, use `localhost` as the host. The `api-key` value must match the `API_KEY` environment variable configured for the container.
+
+Once connected, OpenCode can use the remote runner's built-in tools and any dynamic tools registered for saved flows.
+
 ### Built-in tools
 
 | Tool | What it does |
