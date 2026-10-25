@@ -4,6 +4,15 @@ Build, test, and reuse API workflows—with support for AI agents through MCP.
 
 Flow Requests is a visual workflow builder for API testing and automation. Connect requests into reusable flows, extend them with plugins, and run automations from MCP-compatible AI agents.
 
+## Tech Stack
+
+- **Frontend:** Next.js, React, TypeScript, Tailwind CSS, and React Flow.
+- **Remote runner:** Deno, Hono, PostgreSQL, Docker, and MCP.
+- **AI:** LangChain.js, OpenRouter, AssemblyAI, and [AI agent skills](#ai-agent-skills).
+- **Storage:** IndexedDB locally; PostgreSQL for remote flows.
+- **Hosting:** Vercel for the frontend; Render or Docker for the remote runner.
+- **Example plugin integrations:** Firecrawl, SerpApi, Linear, Telegram, and Mailtrap.
+
 ## Features
 
 - **Visual workflow builder**: Connect API requests and workflow nodes in a drag-and-drop canvas to build and test multi-step automations.
