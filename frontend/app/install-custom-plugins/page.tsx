@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import AvailablePluginsDialog from "@/components/available-plugins-dialog";
 import { ToastContainer } from "react-toastify";
 import Link from "next/link";
 import useCustomNode from "@/hooks/useCustomPlugin";
 
 export default function InstallCustomPackages() {
+  const [isAvailablePluginsOpen, setIsAvailablePluginsOpen] = useState(false);
   const {
     packageName,
     setPackageName,
@@ -40,8 +42,18 @@ export default function InstallCustomPackages() {
             ← Back to Flows
           </Button>
         </Link>
-        <h1 className="text-3xl font-bold">Install Plugin</h1>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h1 className="text-3xl font-bold">Install Plugin</h1>
+          <Button onClick={() => setIsAvailablePluginsOpen(true)}>
+            Available plugins
+          </Button>
+        </div>
       </div>
+
+      <AvailablePluginsDialog
+        open={isAvailablePluginsOpen}
+        onOpenChange={setIsAvailablePluginsOpen}
+      />
 
       <div className="max-w-2xl mx-auto space-y-8">
         <Card>
