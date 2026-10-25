@@ -1,0 +1,10 @@
+{
+  "nodeModulesDir": "auto",
+  "imports": {
+    "core-package-mini-n8n": "npm:core-package-mini-n8n@^1.1.5"
+  },
+  "name": "@flow-requests/serpapi-plugin",
+  "version": "1.0.0",
+  "description": "Search engine results via SerpApi for Flow Requests",
+  "exports": "./dist/deno-bundle.js"
+}
