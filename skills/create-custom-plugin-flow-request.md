@@ -37,6 +37,8 @@ Every plugin:
 
 - Extends `NodeBase` from `core-package-mini-n8n`.
 - Implements two mandatory methods: `getConfig()` and `execute()`.
+- Provides a user-facing `info` string for every configured property in
+  `getConfig()`.
 - Is compiled into two bundles: a browser bundle (`dist/bundle.js`) and a
   Deno-compatible bundle (`dist/deno-bundle.js`).
 - Is installed in the UI by pasting a **CDN URL** plus the **library name**
@@ -152,6 +154,8 @@ class MyPlugin extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "Authentication token for the external service. Store it securely and reference it from an environment variable.",
           ai_description: "Authentication token for the external service",
         },
 
@@ -162,6 +166,8 @@ class MyPlugin extends NodeBase {
           type: "textarea",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Optional JSON payload sent to the external service.",
         },
 
         // --- select field ---
@@ -171,6 +177,8 @@ class MyPlugin extends NodeBase {
           type: "select",
           required: true,
           default: "send",
+          // @ts-ignore
+          info: "Choose whether this plugin sends data to or receives data from the service.",
           options: [
             { label: "Send",    value: "send" },
             { label: "Receive", value: "receive" },
@@ -184,6 +192,8 @@ class MyPlugin extends NodeBase {
           type: "text",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Identifier of the target resource. This field is shown only for the Send operation.",
           conditionShow: [
             {
               keyCheck: "operation",       // watched property
@@ -300,9 +310,15 @@ interface NodeProperty {
     keyCheck: string;
     valueExpected: string;
   }>;
+  info?: string;          // user-facing explanation shown in the configuration UI
   ai_description?: string;
 }
 ```
+
+Add a concise, user-facing `info` string to every property in `getConfig()` and
+place `// @ts-ignore` on the line immediately above each `info` key. Explain
+what value to provide, expected formats, or when the field is relevant. The UI
+displays an info icon beside the property label when this string is set.
 
 ### `NodeInput`
 

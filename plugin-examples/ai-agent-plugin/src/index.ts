@@ -26,6 +26,8 @@ class AiAgentNode extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "Your OpenRouter API token used to authenticate requests to the language model service.",
         },
         {
           label: "LLM Model",
@@ -33,6 +35,8 @@ class AiAgentNode extends NodeBase {
           type: "text",
           required: true,
           default: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          // @ts-ignore
+          info: "OpenRouter model identifier for the language model that will generate the response.",
         },
         {
           label: "System Prompt",
@@ -40,6 +44,8 @@ class AiAgentNode extends NodeBase {
           type: "textarea",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "Instructions that define the assistant's role, behavior, and response constraints.",
         },
         {
           label: "User Prompt",
@@ -47,27 +53,35 @@ class AiAgentNode extends NodeBase {
           type: "textarea",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "User message or question to send to the assistant. Supports Flow Requests expressions.",
         },
         {
           label: "Session id(To use the save the interactions user did)",
           name: "sessionId",
           type: "text",
           required: true,
-          default: null
+          default: null,
+          // @ts-ignore
+          info: "Identifier used to store and retrieve conversation history for the same user or session.",
         },
         {
           label: "Redis URL(HTTP URL from Redis(Qstash))",
           name: "redisUrl",
           type: "text",
           required: true,
-          default: null
+          default: null,
+          // @ts-ignore
+          info: "HTTP URL for the Redis database used to persist conversation history.",
         },
         {
           label: "Redis token(Qstash Redis token)",
           name: "redisToken",
           type: "text",
           required: true,
-          default: null
+          default: null,
+          // @ts-ignore
+          info: "Authentication token for the Redis database. Keep it secret and prefer an environment variable.",
         },
       ],
     };

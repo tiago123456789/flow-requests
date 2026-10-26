@@ -24,6 +24,8 @@ class FakeTodosNode extends NodeBase {
           type: "select",
           required: true,
           default: "getAll",
+          // @ts-ignore
+          info: "Choose whether to list todos, retrieve one by ID, delete one by ID, or create a todo.",
           options: [
             {
               label: "Get all",
@@ -49,6 +51,8 @@ class FakeTodosNode extends NodeBase {
           type: "text",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "ID of the todo to retrieve. Shown when Get by id is selected.",
           conditionShow: [
             {
               keyCheck: "operation",
@@ -62,6 +66,8 @@ class FakeTodosNode extends NodeBase {
           type: "text",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "ID of the todo to delete. Shown when Delete by id is selected.",
           conditionShow: [
             {
               keyCheck: "operation",
@@ -75,6 +81,8 @@ class FakeTodosNode extends NodeBase {
           type: "text",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Text describing the todo to create.",
           conditionShow: [
             {
               keyCheck: "operation",
@@ -88,6 +96,8 @@ class FakeTodosNode extends NodeBase {
           type: "select",
           required: false,
           default: "false",
+          // @ts-ignore
+          info: "Choose whether the new todo should be marked as completed.",
           options: [
             {
               label: "Yes",
@@ -111,6 +121,8 @@ class FakeTodosNode extends NodeBase {
           type: "text",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Numeric ID of the user who owns the new todo.",
           conditionShow: [
             {
               keyCheck: "operation",

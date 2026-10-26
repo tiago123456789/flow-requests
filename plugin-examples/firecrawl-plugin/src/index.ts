@@ -33,6 +33,8 @@ class FirecrawlPlugin extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "Your Firecrawl API key. Store it in an environment variable and reference it with a Flow Requests expression.",
           ai_description:
             "Your Firecrawl API key. Store it as an environment variable and reference with {{ state.envData.FIRECRAWL_API_KEY }}.",
         },
@@ -44,6 +46,8 @@ class FirecrawlPlugin extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "The full URL of the web page to scrape. Supports Flow Requests expressions.",
           ai_description:
             "The URL to scrape. Supports {{ }} expressions, e.g. {{ steps.prevNode.output.data.url }}.",
         },
@@ -55,6 +59,8 @@ class FirecrawlPlugin extends NodeBase {
           type: "select",
           required: true,
           default: "markdown",
+          // @ts-ignore
+          info: "Choose the format returned for the scraped page content.",
           options: [
             { label: "Markdown", value: "markdown" },
             { label: "HTML", value: "html" },
@@ -73,6 +79,8 @@ class FirecrawlPlugin extends NodeBase {
           type: "select",
           required: false,
           default: "true",
+          // @ts-ignore
+          info: "Choose whether Firecrawl removes navigation, headers, and footers to focus on the main page content.",
           options: [
             { label: "Yes (strip headers/footers/navs)", value: "true" },
             { label: "No (return full page)", value: "false" },
@@ -88,6 +96,8 @@ class FirecrawlPlugin extends NodeBase {
           type: "text",
           required: false,
           default: "0",
+          // @ts-ignore
+          info: "Additional wait time in milliseconds before fetching the page. Useful for single-page applications; maximum 60000.",
           ai_description:
             "Milliseconds to wait before fetching content, in addition to Firecrawl's smart wait. Useful for SPAs. Maximum 60000.",
         },
@@ -99,6 +109,8 @@ class FirecrawlPlugin extends NodeBase {
           type: "text",
           required: false,
           default: "60000",
+          // @ts-ignore
+          info: "Maximum time in milliseconds to wait for the scrape request, between 1000 and 300000.",
           ai_description:
             "Request timeout in milliseconds (1000–300000). Defaults to 60000.",
         },
@@ -110,6 +122,8 @@ class FirecrawlPlugin extends NodeBase {
           type: "select",
           required: false,
           default: "auto",
+          // @ts-ignore
+          info: "Select the proxy strategy. Auto is recommended and can retry with enhanced proxies when needed.",
           options: [
             {
               label: "Auto (retry with enhanced if basic fails)",
@@ -132,6 +146,8 @@ class FirecrawlPlugin extends NodeBase {
           type: "select",
           required: false,
           default: "false",
+          // @ts-ignore
+          info: "Choose whether Firecrawl should render the page using a mobile device profile.",
           options: [
             { label: "No", value: "false" },
             { label: "Yes", value: "true" },
@@ -147,6 +163,8 @@ class FirecrawlPlugin extends NodeBase {
           type: "text",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Comma-separated HTML tag names to exclude from scraped content, for example script,style,img.",
           ai_description:
             "Comma-separated list of HTML tags to exclude from the output, e.g. 'script,style,img'.",
         },

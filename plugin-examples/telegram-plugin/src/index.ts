@@ -23,6 +23,8 @@ class TelegramNode extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "Telegram Bot API token issued by @BotFather. Keep it private and consider using an environment variable.",
           ai_description: "Telegram Bot API token from @BotFather",
         },
         {
@@ -31,6 +33,8 @@ class TelegramNode extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "ID of the Telegram user, group, or channel that should receive the message.",
           ai_description: "The target chat ID to send the message to",
         },
         {
@@ -39,6 +43,8 @@ class TelegramNode extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "Text to send to the selected Telegram chat. Long messages are split into smaller messages.",
           ai_description: "The message content to send",
         },
       ],

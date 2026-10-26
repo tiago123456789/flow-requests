@@ -134,6 +134,8 @@ class LinearIssuesNode extends NodeBase {
           type: "select",
           required: true,
           default: "issues",
+          // @ts-ignore
+          info: "Choose whether to list issues, projects, or issue labels. Issue search and filters apply only when listing issues.",
           options: [
             { label: "List issues", value: "issues" },
             { label: "List projects", value: "projects" },
@@ -148,6 +150,8 @@ class LinearIssuesNode extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "Your Linear personal API key. Store it as an environment variable and reference it here.",
           ai_description:
             "Personal API key from Linear. Store it as an environment variable and reference it with {{ this.state.envData.LINEAR_API_KEY }}.",
         },
@@ -157,6 +161,8 @@ class LinearIssuesNode extends NodeBase {
           type: "text",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Optional text to search across Linear issues. Leave blank to list issues using the selected filters.",
           ai_description:
             "Optional text to search for across Linear issues. When empty, issues are listed using the supplied filters.",
         },
@@ -166,6 +172,8 @@ class LinearIssuesNode extends NodeBase {
           type: "text",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Optional Linear team key, such as ENG, to restrict issue results to one team.",
           ai_description:
             "Optional Linear team key, such as ENG, to restrict the results to one team.",
         },
@@ -175,6 +183,8 @@ class LinearIssuesNode extends NodeBase {
           type: "text",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Optional workflow state name, such as In Progress or Done, to filter issues.",
           ai_description:
             "Optional workflow state name, such as In Progress or Done.",
         },
@@ -184,6 +194,8 @@ class LinearIssuesNode extends NodeBase {
           type: "text",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Optional email address used to filter issues by their assigned Linear user.",
           ai_description:
             "Optional email address of the assigned Linear user.",
         },
@@ -193,6 +205,8 @@ class LinearIssuesNode extends NodeBase {
           type: "text",
           required: false,
           default: String(DEFAULT_LIMIT),
+          // @ts-ignore
+          info: `Maximum number of records to return per page (1–${MAX_LIMIT}); defaults to ${DEFAULT_LIMIT}.`,
           ai_description: `Number of records to request (1–${MAX_LIMIT}). Defaults to ${DEFAULT_LIMIT}. Use the returned endCursor with the optional cursor setting to fetch the next page.`,
         },
         {
@@ -201,6 +215,8 @@ class LinearIssuesNode extends NodeBase {
           type: "text",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Optional pagination cursor from data.pageInfo.endCursor to fetch the next page.",
           ai_description:
             "Optional cursor from data.pageInfo.endCursor to continue listing from the next page.",
         },

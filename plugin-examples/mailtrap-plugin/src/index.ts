@@ -23,6 +23,8 @@ class MailtrapNode extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "Your Mailtrap API token, used to authenticate the email request.",
         },
         {
           label: "Api url",
@@ -30,6 +32,8 @@ class MailtrapNode extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "The Mailtrap API endpoint URL that accepts the email request.",
         },
         {
           label: "Subject",
@@ -37,6 +41,8 @@ class MailtrapNode extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "The subject line of the email to send.",
         },
         {
           label: "Email text",
@@ -44,6 +50,8 @@ class MailtrapNode extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "The plain-text body content of the email.",
         },
         {
           label: "From",
@@ -51,6 +59,8 @@ class MailtrapNode extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "The sender email address for the message.",
         },
         {
           label: "To",
@@ -58,6 +68,8 @@ class MailtrapNode extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "The recipient email address for the message.",
         },
       ],
     };
