@@ -1,6 +1,6 @@
 {
   "name": "fake-todos-plugin",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Fake todos plugins",
   "main": "dist/deno-bundle.js",
   "browser": "dist/bundle.js",

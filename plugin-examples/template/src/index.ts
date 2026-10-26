@@ -22,6 +22,8 @@ class TemplateNode extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "Enter the GitHub username whose profile or repositories you want to retrieve.",
         },
         {
           label: "Operation",
@@ -29,6 +31,8 @@ class TemplateNode extends NodeBase {
           type: "select",
           required: true,
           default: "getProfile",
+          // @ts-ignore
+          info: "Choose which GitHub resource to retrieve for the specified username.",
           options: [
             {
               label: "Get Repos",
@@ -50,6 +54,8 @@ class TemplateNode extends NodeBase {
           type: "text",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Enter the repository name when the selected operation is Get a specific repo.",
           conditionShow: [
             {
               keyCheck: "operation",

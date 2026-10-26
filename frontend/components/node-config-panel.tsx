@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trash, PlusCircle, AlertTriangle } from "lucide-react";
+import { Trash, PlusCircle, AlertTriangle, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,11 @@ import {
 import NativeNodeType from "@/types/native-node-type.type";
 import VariableInput from "./variable-input";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface NodeConfigPanelProps {
   node: { [key: string]: any };
@@ -404,12 +409,32 @@ export default function NodeConfigPanel({
               }
             }
 
+            const propertyLabel = (
+              <div className="flex items-center gap-2">
+                <Label htmlFor={property.name}>
+                  {property.label} {requiredOrOptional}
+                </Label>
+                {typeof property.info === "string" && property.info.trim() && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label={`Information about ${property.label}`}
+                        className="text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full"
+                      >
+                        <Info className="h-4 w-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>{property.info}</TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+            );
+
             if (property.type == "select") {
               return (
                 <div key={property.name} className="space-y-2">
-                  <Label htmlFor={property.name}>
-                    {property.label} {requiredOrOptional}
-                  </Label>
+                  {propertyLabel}
                   <Select
                     value={
                       config[property.name] || node.data[property.name] || ""
@@ -436,9 +461,7 @@ export default function NodeConfigPanel({
             if (property.type == "textarea") {
               return (
                 <div key={property.name} className="space-y-2">
-                  <Label htmlFor={property.name}>
-                    {property.label} {requiredOrOptional}
-                  </Label>
+                  {propertyLabel}
                   <textarea
                     rows={5}
                     cols={55}
@@ -458,9 +481,7 @@ export default function NodeConfigPanel({
             if (property.type == "text") {
               return (
                 <div key={property.name} className="space-y-2">
-                  <Label htmlFor={property.name}>
-                    {property.label} {requiredOrOptional}
-                  </Label>
+                  {propertyLabel}
                   <VariableInput
                     placeholder="Type value here"
                     options={optionsMenu}
@@ -474,9 +495,7 @@ export default function NodeConfigPanel({
             if (property.type == "number") {
               return (
                 <div key={property.name} className="space-y-2">
-                  <Label htmlFor={property.name}>
-                    {property.label} {requiredOrOptional}
-                  </Label>
+                  {propertyLabel}
                   <Input
                     type="number"
                     id={property.name}

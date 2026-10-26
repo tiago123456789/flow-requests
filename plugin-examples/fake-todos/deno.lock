@@ -1,19 +1,21 @@
 {
   "version": "5",
   "specifiers": {
+    "npm:@faker-js/faker@^10.2.0": "10.6.0",
     "npm:@jest/globals@^30.2.0": "30.2.0",
     "npm:@types/jest@30": "30.0.0",
     "npm:@types/nodemailer@^7.0.4": "7.0.4",
     "npm:axios@^1.13.2": "1.13.2",
     "npm:core-package-mini-n8n@^1.1.5": "1.3.0",
+    "npm:core-package-mini-n8n@^1.3.0": "1.3.0",
     "npm:esbuild@~0.27.2": "0.27.2",
-    "npm:jest@^30.2.0": "30.2.0_ts-node@10.9.2__@types+node@25.0.3__typescript@5.9.3_typescript@5.9.3",
-    "npm:ts-jest@^29.4.5": "29.4.6_jest@30.2.0__ts-node@10.9.2___@types+node@25.0.3___typescript@5.9.3__typescript@5.9.3_typescript@5.9.3_ts-node@10.9.2__@types+node@25.0.3__typescript@5.9.3",
-    "npm:ts-loader@^9.5.4": "9.5.4_typescript@5.9.3_webpack@5.104.1__acorn@8.15.0",
+    "npm:jest@^30.2.0": "30.2.0_ts-node@10.9.2_typescript@5.9.3",
+    "npm:ts-jest@^29.4.5": "29.4.6_jest@30.2.0_typescript@5.9.3_ts-node@10.9.2",
+    "npm:ts-loader@^9.5.4": "9.5.4_typescript@5.9.3_webpack@5.104.1",
     "npm:ts-node@^10.9.2": "10.9.2_@types+node@25.0.3_typescript@5.9.3",
     "npm:tsx@^4.20.6": "4.21.0",
     "npm:typescript@^5.9.3": "5.9.3",
-    "npm:webpack-cli@^6.0.1": "6.0.1_webpack@5.104.1__acorn@8.15.0",
+    "npm:webpack-cli@^6.0.1": "6.0.1_webpack@5.104.1",
     "npm:webpack@^5.104.1": "5.104.1_acorn@8.15.0"
   },
   "npm": {
@@ -863,6 +865,9 @@
       "os": ["win32"],
       "cpu": ["x64"]
     },
+    "@faker-js/faker@10.6.0": {
+      "integrity": "sha512-3RQHgEtvL1Frl/d1cSreo7qhJ3Gk1OdNUai/CtZ8G+wYeRQnJih3s9xJ9/kgYekPQRdwgh0HXRPqMlzWGwivIQ=="
+    },
     "@isaacs/cliui@8.0.2": {
       "integrity": "sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==",
       "dependencies": [
@@ -898,7 +903,7 @@
         "slash"
       ]
     },
-    "@jest/core@30.2.0_@types+node@25.0.3_ts-node@10.9.2__@types+node@25.0.3__typescript@5.9.3_typescript@5.9.3": {
+    "@jest/core@30.2.0_@types+node@25.0.3_ts-node@10.9.2_typescript@5.9.3": {
       "integrity": "sha512-03W6IhuhjqTlpzh/ojut/pDB2LPRygyWX8ExpgHtQA8H/3K7+1vKmcINx5UzeOX1se6YEsBsOHQ1CRzf3fOwTQ==",
       "dependencies": [
         "@jest/console",
@@ -1632,7 +1637,8 @@
       ]
     },
     "@ungap/structured-clone@1.3.0": {
-      "integrity": "sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g=="
+      "integrity": "sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==",
+      "deprecated": true
     },
     "@unrs/resolver-binding-android-arm-eabi@1.11.1": {
       "integrity": "sha512-ppLRUgHVaGRWUx0R0Ut06Mjo9gBaBkg3v/8AxusGLhsIotbBLuRk51rAzqLC8gq6NyyAojEXglNjzf6R948DNw==",
@@ -1832,21 +1838,21 @@
         "@xtuc/long"
       ]
     },
-    "@webpack-cli/configtest@3.0.1_webpack@5.104.1__acorn@8.15.0_webpack-cli@6.0.1__webpack@5.104.1___acorn@8.15.0": {
+    "@webpack-cli/configtest@3.0.1_webpack@5.104.1_webpack-cli@6.0.1": {
       "integrity": "sha512-u8d0pJ5YFgneF/GuvEiDA61Tf1VDomHHYMjv/wc9XzYj7nopltpG96nXN5dJRstxZhcNpV1g+nT6CydO7pHbjA==",
       "dependencies": [
         "webpack",
         "webpack-cli"
       ]
     },
-    "@webpack-cli/info@3.0.1_webpack@5.104.1__acorn@8.15.0_webpack-cli@6.0.1__webpack@5.104.1___acorn@8.15.0": {
+    "@webpack-cli/info@3.0.1_webpack@5.104.1_webpack-cli@6.0.1": {
       "integrity": "sha512-coEmDzc2u/ffMvuW9aCjoRzNSPDl/XLuhPdlFRpT9tZHmJ/039az33CE7uH+8s0uL1j5ZNtfdv0HkfaKRBGJsQ==",
       "dependencies": [
         "webpack",
         "webpack-cli"
       ]
     },
-    "@webpack-cli/serve@3.0.1_webpack@5.104.1__acorn@8.15.0_webpack-cli@6.0.1__webpack@5.104.1___acorn@8.15.0": {
+    "@webpack-cli/serve@3.0.1_webpack@5.104.1_webpack-cli@6.0.1": {
       "integrity": "sha512-sbgw03xQaCLiT6gcY/6u3qBDn01CWw/nbaXl3gTdTFuJJ75Gffv3E3DBpgvY2fkkrdS1fpjaXNOmJlnbtKauKg==",
       "dependencies": [
         "webpack",
@@ -2473,6 +2479,7 @@
         "package-json-from-dist",
         "path-scurry"
       ],
+      "deprecated": true,
       "bin": true
     },
     "glob@7.2.3": {
@@ -2666,7 +2673,7 @@
         "stack-utils"
       ]
     },
-    "jest-cli@30.2.0_ts-node@10.9.2__@types+node@25.0.3__typescript@5.9.3_typescript@5.9.3": {
+    "jest-cli@30.2.0_ts-node@10.9.2_typescript@5.9.3": {
       "integrity": "sha512-Os9ukIvADX/A9sLt6Zse3+nmHtHaE6hqOsjQtNiugFTbKRHYIYtZXNGNK9NChseXy7djFPjndX1tL0sCTlfpAA==",
       "dependencies": [
         "@jest/core",
@@ -2682,7 +2689,7 @@
       ],
       "bin": true
     },
-    "jest-config@30.2.0_@types+node@25.0.3_ts-node@10.9.2__@types+node@25.0.3__typescript@5.9.3_@babel+core@7.28.5_typescript@5.9.3": {
+    "jest-config@30.2.0_@types+node@25.0.3_ts-node@10.9.2_@babel+core@7.28.5_typescript@5.9.3": {
       "integrity": "sha512-g4WkyzFQVWHtu6uqGmQR4CQxz/CH3yDSlhzXMWzNjDx843gYjReZnMRanjRCq5XZFuQrGDxgUaiYWE8BRfVckA==",
       "dependencies": [
         "@babel/core",
@@ -2975,7 +2982,7 @@
         "supports-color@8.1.1"
       ]
     },
-    "jest@30.2.0_ts-node@10.9.2__@types+node@25.0.3__typescript@5.9.3_typescript@5.9.3": {
+    "jest@30.2.0_ts-node@10.9.2_typescript@5.9.3": {
       "integrity": "sha512-F26gjC0yWN8uAA5m5Ss8ZQf5nDHWGlN/xWZIh8S5SRbsEKBovwZhxGd6LJlbZYxBgCYOtreSUyb8hpXyGC5O4A==",
       "dependencies": [
         "@jest/core",
@@ -3414,7 +3421,7 @@
     "tapable@2.3.0": {
       "integrity": "sha512-g9ljZiwki/LfxmQADO3dEY1CbpmXT5Hm2fJ+QaGKwSXUylMybePR7/67YW7jOrrvjEgL1Fmz5kzyAjWVWLlucg=="
     },
-    "terser-webpack-plugin@5.3.16_webpack@5.104.1__acorn@8.15.0": {
+    "terser-webpack-plugin@5.3.16_webpack@5.104.1": {
       "integrity": "sha512-h9oBFCWrq78NyWWVcSwZarJkZ01c2AyGrzs1crmHZO3QUg9D61Wu4NPjBy69n7JqylFF5y+CsUZYmYEIZ3mR+Q==",
       "dependencies": [
         "@jridgewell/trace-mapping@0.3.31",
@@ -3452,7 +3459,7 @@
         "is-number"
       ]
     },
-    "ts-jest@29.4.6_jest@30.2.0__ts-node@10.9.2___@types+node@25.0.3___typescript@5.9.3__typescript@5.9.3_typescript@5.9.3_ts-node@10.9.2__@types+node@25.0.3__typescript@5.9.3": {
+    "ts-jest@29.4.6_jest@30.2.0_typescript@5.9.3_ts-node@10.9.2": {
       "integrity": "sha512-fSpWtOO/1AjSNQguk43hb/JCo16oJDnMJf3CdEGNkqsEX3t0KX96xvyX1D7PfLCpVoKu4MfVrqUkFyblYoY4lA==",
       "dependencies": [
         "bs-logger",
@@ -3469,7 +3476,7 @@
       ],
       "bin": true
     },
-    "ts-loader@9.5.4_typescript@5.9.3_webpack@5.104.1__acorn@8.15.0": {
+    "ts-loader@9.5.4_typescript@5.9.3_webpack@5.104.1": {
       "integrity": "sha512-nCz0rEwunlTZiy6rXFByQU1kVVpCIgUpc/psFiKVrUwrizdnIbRFu8w7bxhUF0X613DYwT4XzrZHpVyMe758hQ==",
       "dependencies": [
         "chalk",
@@ -3597,7 +3604,7 @@
         "graceful-fs"
       ]
     },
-    "webpack-cli@6.0.1_webpack@5.104.1__acorn@8.15.0": {
+    "webpack-cli@6.0.1_webpack@5.104.1": {
       "integrity": "sha512-MfwFQ6SfwinsUVi0rNJm7rHZ31GyTcpVE5pgVA3hwFRb7COD4TzjUUwhGWKfO50+xdc2MQPuEBBJoqIMGt3JDw==",
       "dependencies": [
         "@discoveryjs/json-ext",
@@ -3727,6 +3734,11 @@
     }
   },
   "workspace": {
+    "dependencies": [
+      "npm:@faker-js/faker@^10.2.0",
+      "npm:axios@^1.13.2",
+      "npm:core-package-mini-n8n@^1.3.0"
+    ],
     "packageJson": {
       "dependencies": [
         "npm:@jest/globals@^30.2.0",

@@ -23,6 +23,8 @@ class CodeNode extends NodeBase {
           type: "textarea",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "JavaScript expression to run in the isolated VM sandbox. Its result is returned as the node output.",
         },
         {
           label: "Data (JSON)",
@@ -30,6 +32,8 @@ class CodeNode extends NodeBase {
           type: "textarea",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Optional JSON object whose fields are available to the JavaScript code as variables.",
         },
       ],
     };

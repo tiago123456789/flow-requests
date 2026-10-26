@@ -27,6 +27,8 @@ class SerpApiPlugin extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "Your SerpApi private API key. Use an environment variable to keep it out of the workflow configuration.",
           ai_description:
             "SerpApi private API key. Store it in an environment variable and reference it with {{ state.envData.SERPAPI_API_KEY }}.",
         },
@@ -36,6 +38,8 @@ class SerpApiPlugin extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "The search terms to send to SerpApi. Supports Flow Requests expressions.",
           ai_description:
             "Search query passed as the q parameter. Supports Flow Requests expressions.",
         },
@@ -45,6 +49,8 @@ class SerpApiPlugin extends NodeBase {
           type: "text",
           required: false,
           default: "google",
+          // @ts-ignore
+          info: "The SerpApi search engine to use, such as google, bing, youtube, or google_news. Defaults to google.",
           ai_description:
             "SerpApi engine identifier, such as google, bing, youtube, or google_news. Defaults to google.",
         },
@@ -54,6 +60,8 @@ class SerpApiPlugin extends NodeBase {
           type: "textarea",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Optional JSON object of engine-specific SerpApi parameters, such as location, language, or pagination settings.",
           ai_description:
             "Optional JSON object of additional SerpApi parameters. For example: {\"location\":\"Austin, Texas\",\"hl\":\"en\",\"gl\":\"us\"}. Parameter availability depends on the selected engine.",
         },

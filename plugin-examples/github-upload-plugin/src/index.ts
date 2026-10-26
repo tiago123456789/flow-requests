@@ -123,6 +123,8 @@ class GitHubUploadPlugin extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "GitHub personal access token with repository creation, visibility management, and content write permissions. Prefer an environment variable.",
           ai_description:
             "GitHub token with permission to create repositories, change repository visibility, and write repository contents. Prefer referencing an environment variable.",
         },
@@ -132,6 +134,8 @@ class GitHubUploadPlugin extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "Name of the GitHub repository to upload the attachment to. A public repository is created if it does not exist.",
           ai_description:
             "Name of the repository to upload to. If it does not exist, a public repository with this name is created under the authenticated GitHub account, unless an owner is specified.",
         },
@@ -141,6 +145,8 @@ class GitHubUploadPlugin extends NodeBase {
           type: "text",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Optional GitHub username or organization that owns the repository. Leave blank to use the token owner's account.",
           ai_description:
             "Optional GitHub user or organization that owns the repository. Leave empty to use the account associated with the token.",
         },
@@ -150,6 +156,8 @@ class GitHubUploadPlugin extends NodeBase {
           type: "text",
           required: true,
           default: "{{ this.state.request.body.attachment }}",
+          // @ts-ignore
+          info: "Base64-encoded data URL for the attachment, for example {{ this.state.request.body.attachment }}.",
           ai_description:
             "Base64 data URL from the incoming request, for example {{ this.state.request.body.attachment }} when the body contains { fullName, attachment }. MIME type determines the uploaded file extension.",
         },

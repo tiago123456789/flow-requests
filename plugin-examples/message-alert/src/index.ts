@@ -22,6 +22,8 @@ class AlertMessageNode extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "The message to display in an alert in the browser or write to the server log.",
         },
       ],
     };

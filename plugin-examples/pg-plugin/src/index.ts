@@ -29,6 +29,8 @@ class PostgresNode extends NodeBase {
           type: "text",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "PostgreSQL connection URL, for example postgresql://user:password@host:5432/database.",
           ai_description:
             "Postgres connection string, e.g. postgresql://user:pass@host:5432/mydb",
         },
@@ -38,6 +40,8 @@ class PostgresNode extends NodeBase {
           type: "textarea",
           required: true,
           default: null,
+          // @ts-ignore
+          info: "SQL statement to execute. Use $1, $2, and similar placeholders for parameter values.",
           ai_description:
             "SQL to execute. Use $1, $2 placeholders for bind values, e.g. SELECT id, name FROM users WHERE email = $1",
         },
@@ -47,6 +51,8 @@ class PostgresNode extends NodeBase {
           type: "textarea",
           required: false,
           default: null,
+          // @ts-ignore
+          info: "Optional JSON array of values bound to the query placeholders in order.",
           ai_description:
             'Optional JSON array of bind values for $1, $2 placeholders, e.g. ["alice@example.com"]',
         },
