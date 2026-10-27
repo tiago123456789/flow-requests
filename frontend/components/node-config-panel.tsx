@@ -46,6 +46,7 @@ export default function NodeConfigPanel({
   const [config, setConfig] = useState({ ...node.data });
   const [headers, setHeaders] = useState<Array<{ [key: string]: any }>>([{}]);
   const [body, setBody] = useState<Array<{ [key: string]: any }>>([{}]);
+  const [fileValues, setFileValues] = useState<Record<string, File | null>>({});
 
   const [condition, setCondition] = useState(
     node.data.condition || {
@@ -101,6 +102,7 @@ export default function NodeConfigPanel({
 
   useEffect(() => {
     setConfig(node.data);
+    setFileValues({});
     if (node.data && node.data.headers && node.data.headers.length > 0)
       setHeaders(node.data.headers);
     if (node.data && node.data.body && node.data.body.length > 0)
@@ -116,6 +118,30 @@ export default function NodeConfigPanel({
     };
     setConfig(newConfig);
     onChange(node.id, newConfig);
+  };
+
+  const readFileAsDataUrl = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+
+  const handleCustomNodeSave = async () => {
+    const newConfig = { ...config };
+    await Promise.all(
+      Object.entries(fileValues).map(async ([propertyName, file]) => {
+        if (file) {
+          newConfig[propertyName] = await readFileAsDataUrl(file);
+        }
+      }),
+    );
+
+    onChange(node.id, newConfig);
+    setConfig(null);
+    setFileValues({});
+    onClose();
   };
 
   const renderStartConfig = () => <></>;
@@ -509,14 +535,29 @@ export default function NodeConfigPanel({
                 </div>
               );
             }
+
+            if (property.type?.toLowerCase() === "file") {
+              return (
+                <div key={property.name} className="space-y-2">
+                  {propertyLabel}
+                  <Input
+                    type="file"
+                    id={property.name}
+                    onChange={(e) =>
+                      setFileValues((previousValues) => ({
+                        ...previousValues,
+                        [property.name]: e.target.files?.[0] ?? null,
+                      }))
+                    }
+                  />
+                </div>
+              );
+            }
           })}
         </div>
         <div className="space-y-2">
           <Button
-            onClick={() => {
-              setConfig(null);
-              onClose();
-            }}
+            onClick={handleCustomNodeSave}
           >
             Save
           </Button>
