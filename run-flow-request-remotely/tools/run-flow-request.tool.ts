@@ -34,6 +34,7 @@ export default function (mcpServer: McpServer, createLoggedTool: any) {
                 body,
                 flowData.plugins,
                 flowData.flow,
+                id,
             );
 
             return {

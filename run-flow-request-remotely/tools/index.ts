@@ -5,6 +5,7 @@ import saveFlowRequest from "./save-flow-request.tool.ts";
 import saveFlowRequestAsTool from "./save-flow-request-as-tool.tool.ts";
 import updateFlowRequestAsTool from "./update-flow-request-as-tool.tool.ts";
 import deleteFlowRequest from "./delete-flow-request.tool.ts";
+import getFlowRequestLogs from "./get-flow-request-logs.tool.ts";
 import refreshMcpFlows from "./refresh-mcp-flows.tool.ts";
 import createMcpGroup from "./create-mcp-group.tool.ts";
 import { syncMcpFlowTools } from "./mcp-flows-registry.ts";
@@ -23,6 +24,7 @@ const toolRegistrars = new Map<string, ToolRegistrar>([
   ["save_flow_request_as_tool", saveFlowRequestAsTool],
   ["update_flow_request_as_tool", updateFlowRequestAsTool],
   ["delete_flow_request", deleteFlowRequest],
+  ["get_flow_request_logs", getFlowRequestLogs],
   ["refresh_mcp_tools", refreshMcpFlows],
   ["create_mcp_group", createMcpGroup],
 ]);

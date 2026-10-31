@@ -121,6 +121,27 @@ export async function initDatabase() {
   } else {
     console.log("Table mcp_group_tools already exists");
   }
+
+  const flowsLogsExists = await database.schema.hasTable("flows_logs");
+  if (!flowsLogsExists) {
+    await database.schema.raw(`
+      CREATE TABLE flows_logs (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        flow_request_id UUID REFERENCES flow_requests(id) ON DELETE SET NULL,
+        data JSONB NOT NULL DEFAULT '[]'::jsonb,
+        executed_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `);
+    await database.schema.raw(
+      `CREATE INDEX IF NOT EXISTS idx_flows_logs_flow_request_id ON flows_logs(flow_request_id)`,
+    );
+    await database.schema.raw(
+      `CREATE INDEX IF NOT EXISTS idx_flows_logs_executed_at ON flows_logs(executed_at)`,
+    );
+    console.log("Table flows_logs created successfully");
+  } else {
+    console.log("Table flows_logs already exists");
+  }
 }
 
 export function isWebhookMode() {

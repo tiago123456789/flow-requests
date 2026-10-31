@@ -99,6 +99,7 @@ Once connected, OpenCode can use the remote runner's built-in tools and any dyna
 | `save_flow_request_as_tool` | Creates a flow request and registers it as a dynamic MCP tool with a name, description, and input schema. |
 | `update_flow_request_as_tool` | Updates a saved flow request and syncs its associated dynamic MCP tool. |
 | `delete_flow_request` | Deletes a flow request, removes its associated MCP flow records, and syncs dynamic tools. |
+| `get_flow_request_logs` | Returns the last 10 executions of a flow request, ordered by `executed_at` descending. |
 | `refresh_mcp_tools` | Reloads dynamic tools from the database. Use this after creating or updating MCP flows through the HTTP API. |
 | `create_mcp_group` | Creates an MCP group with selected tools and returns its new `mg_...` token. A group token can only create groups using tools available to that group. |
 
@@ -150,6 +151,7 @@ Protected routes require the admin `api-key` header (or an `api-key` query param
 | `POST /run` | Execute a flow provided in the request body. |
 | `POST /flow-requests` | Create or update a saved flow request. |
 | `DELETE /flow-requests/:id` | Delete a flow request by UUID. |
+| `GET /flow-requests/:id/logs` | Return the last 10 executions of a flow request, newest first. |
 | `POST /mcp-flows`, `GET /mcp-flows` | Create an MCP flow or list registered MCP flows. |
 | `GET`, `PUT`, `DELETE /mcp-flows/:id` | Inspect, update, or delete an MCP flow by ID. |
 | `POST /mcp-flows/refresh` | Synchronize registered MCP tools with the database. |

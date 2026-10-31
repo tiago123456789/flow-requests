@@ -13,6 +13,7 @@ import { syncMcpFlowTools } from "./tools/mcp-flows-registry.ts";
 import { validateMcpFlowPayload } from "./utils/validate-mcp-flow.util.ts";
 import { buildZodRawShape } from "./utils/build-zod-schema.util.ts";
 import { getFlowRequestExecutionData } from "./utils/flow-request-data.util.ts";
+import { getLatestFlowLogs } from "./utils/flow-logs.util.ts";
 import { deleteFlowRequest } from "./utils/delete-flow-request.util.ts";
 import {
   authenticateMcpGroupToken,
@@ -91,7 +92,14 @@ app.post("/run", async (c) => {
 
   const headers = Object.fromEntries(c.req.raw.headers.entries());
   const query = Object.fromEntries(new URL(c.req.url).searchParams);
-  const workflowEngine = await run(headers, body, query, body.plugins, body.flow);
+  const workflowEngine = await run(
+    headers,
+    body,
+    query,
+    body.plugins,
+    body.flow,
+    body.flow_request_id ?? null,
+  );
 
   return c.json({
     status: "ok",
@@ -152,6 +160,23 @@ app.delete("/flow-requests/:id", async (c) => {
     mcp_flows_deleted: deleted.mcpFlowsDeleted,
     sync: syncResult,
   });
+});
+
+app.get("/flow-requests/:id/logs", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  const id = c.req.param("id");
+  if (!UUID_PATTERN.test(id)) {
+    return c.json({ error: "id must be a UUID" }, 400);
+  }
+
+  const db = getDb();
+  const flowRequest = await db("flow_requests").where("id", id).first();
+  if (!flowRequest) return c.json({ error: "flow_request not found" }, 404);
+
+  const logs = await getLatestFlowLogs(id);
+  return c.json({ logs });
 });
 
 app.post("/mcp-flows", async (c) => {
@@ -424,6 +449,7 @@ app.post("/webhooks/:id_flow_request/run", async (c) => {
     requestQuery,
     flowData.plugins,
     flowData.flow,
+    id,
   );
 
   return c.json({
