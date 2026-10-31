@@ -1,6 +1,7 @@
 FROM denoland/deno:2.6.3
 
 ENV API_KEY=""
+ENV MCP_TOKEN_SECRET=""
 ENV DB_URL=""
 ENV WEBHOOK_MODE="false"
 

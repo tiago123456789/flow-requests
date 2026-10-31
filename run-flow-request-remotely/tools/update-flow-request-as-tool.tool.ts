@@ -23,8 +23,9 @@ function errorResult(message: string) {
 export default function (
   mcpServer: McpServer,
   createLoggedTool: any,
+  context?: { allowedTools: ReadonlySet<string> | null },
 ) {
-  mcpServer.tool(
+  return mcpServer.tool(
     "update_flow_request_as_tool",
     "Update a flow request by ID and sync its associated dynamic MCP tool",
     {
@@ -168,6 +169,7 @@ export default function (
         const syncResult = await refreshMcpTools(
           mcpServer,
           createLoggedTool,
+          context?.allowedTools ?? undefined,
         );
         return {
           content: [{

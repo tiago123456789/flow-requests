@@ -13,8 +13,9 @@ function errorResult(message: string) {
 export default function (
   mcpServer: McpServer,
   createLoggedTool: any,
+  context?: { allowedTools: ReadonlySet<string> | null },
 ) {
-  mcpServer.tool(
+  return mcpServer.tool(
     "delete_flow_request",
     "Delete a flow request by ID, remove its associated MCP flows, and sync dynamic MCP tools",
     {
@@ -29,6 +30,7 @@ export default function (
         const syncResult = await refreshMcpTools(
           mcpServer,
           createLoggedTool,
+          context?.allowedTools ?? undefined,
         );
 
         return {

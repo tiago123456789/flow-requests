@@ -4,12 +4,29 @@ import { getDb, initDatabase, isWebhookMode } from "./db/knex.ts";
 import { McpServer } from "npm:@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPTransport } from "jsr:@hono/mcp";
 import { run } from "./utils/execute-flow.util.ts"
-import { createLoggedTool, start } from "./tools/index.ts";
+import {
+  createFilteredMcpServer,
+  createLoggedTool,
+  start,
+} from "./tools/index.ts";
 import { syncMcpFlowTools } from "./tools/mcp-flows-registry.ts";
 import { validateMcpFlowPayload } from "./utils/validate-mcp-flow.util.ts";
 import { buildZodRawShape } from "./utils/build-zod-schema.util.ts";
 import { getFlowRequestExecutionData } from "./utils/flow-request-data.util.ts";
 import { deleteFlowRequest } from "./utils/delete-flow-request.util.ts";
+import {
+  authenticateMcpGroupToken,
+  createMcpGroup,
+  deleteMcpGroup,
+  getMcpGroup,
+  listAvailableMcpTools,
+  listMcpGroups,
+  McpGroupError,
+  removeToolFromMcpGroup,
+  resetMcpGroupToken,
+  updateMcpGroup,
+} from "./utils/mcp-groups.util.ts";
+import type { McpGroup } from "./utils/mcp-groups.util.ts";
 
 const app = new Hono();
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -17,12 +34,44 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 app.use("/*", cors());
 
 
+function getApiKey(c: any): string | undefined {
+  return c.req.header("api-key") || c.req.query("api-key");
+}
+
 function checkApiKey(c: any) {
-  const apiKey = c.req.header("api-key") || c.req.query("api-key");
-  if (apiKey !== Deno.env.get("API_KEY")) {
+  const configuredApiKey = Deno.env.get("API_KEY");
+  const apiKey = getApiKey(c);
+  if (!configuredApiKey || apiKey !== configuredApiKey) {
     return c.text("Unauthorized", 401);
   }
   return null;
+}
+
+type McpAuth = { kind: "admin" } | { kind: "group"; group: McpGroup };
+
+async function resolveMcpAuth(c: any): Promise<McpAuth | null> {
+  const apiKey = getApiKey(c);
+  if (!apiKey) return null;
+
+  const configuredApiKey = Deno.env.get("API_KEY");
+  if (configuredApiKey && apiKey === configuredApiKey) {
+    return { kind: "admin" };
+  }
+
+  if (apiKey.startsWith("mg_")) {
+    const group = await authenticateMcpGroupToken(apiKey);
+    if (group) return { kind: "group", group };
+  }
+
+  return null;
+}
+
+function handleMcpGroupError(c: any, error: unknown) {
+  if (error instanceof McpGroupError) {
+    return c.json({ error: error.message }, error.status as any);
+  }
+  console.error("[MCP-GROUPS] Unexpected error:", error);
+  return c.json({ error: "Internal server error" }, 500);
 }
 
 const mcpServer = new McpServer({
@@ -227,6 +276,124 @@ app.delete("/mcp-flows/:id", async (c) => {
   return c.json({ deleted: true, refresh_required: true });
 });
 
+app.get("/mcp-tools", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  return c.json({ tools: await listAvailableMcpTools() });
+});
+
+app.get("/mcp-groups", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  return c.json({ groups: await listMcpGroups() });
+});
+
+app.post("/mcp-groups", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  const body = await c.req.json().catch(() => null);
+  if (!body) return c.json({ error: "invalid body" }, 400);
+
+  try {
+    const result = await createMcpGroup({
+      name: body.name,
+      tools: body.tools ?? [],
+    });
+    return c.json(result, 201);
+  } catch (error) {
+    return handleMcpGroupError(c, error);
+  }
+});
+
+app.get("/mcp-groups/:id", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  const id = c.req.param("id");
+  if (!UUID_PATTERN.test(id)) {
+    return c.json({ error: "id must be a UUID" }, 400);
+  }
+
+  const group = await getMcpGroup(id);
+  if (!group) return c.json({ error: "MCP group not found" }, 404);
+  const { jwt_token: _jwtToken, ...view } = group;
+  return c.json({ group: view });
+});
+
+app.put("/mcp-groups/:id", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  const id = c.req.param("id");
+  if (!UUID_PATTERN.test(id)) {
+    return c.json({ error: "id must be a UUID" }, 400);
+  }
+
+  const body = await c.req.json().catch(() => null);
+  if (!body) return c.json({ error: "invalid body" }, 400);
+
+  try {
+    const group = await updateMcpGroup(id, {
+      name: body.name,
+      tools: body.tools,
+    });
+    return c.json({ group });
+  } catch (error) {
+    return handleMcpGroupError(c, error);
+  }
+});
+
+app.delete("/mcp-groups/:id", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  const id = c.req.param("id");
+  if (!UUID_PATTERN.test(id)) {
+    return c.json({ error: "id must be a UUID" }, 400);
+  }
+
+  const deleted = await deleteMcpGroup(id);
+  if (!deleted) return c.json({ error: "MCP group not found" }, 404);
+  return c.json({ deleted: true });
+});
+
+app.post("/mcp-groups/:id/reset-token", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  const id = c.req.param("id");
+  if (!UUID_PATTERN.test(id)) {
+    return c.json({ error: "id must be a UUID" }, 400);
+  }
+
+  try {
+    const { token } = await resetMcpGroupToken(id);
+    return c.json({ token });
+  } catch (error) {
+    return handleMcpGroupError(c, error);
+  }
+});
+
+app.delete("/mcp-groups/:id/tools/:toolName", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  const id = c.req.param("id");
+  if (!UUID_PATTERN.test(id)) {
+    return c.json({ error: "id must be a UUID" }, 400);
+  }
+
+  try {
+    const group = await removeToolFromMcpGroup(id, c.req.param("toolName"));
+    return c.json({ group });
+  } catch (error) {
+    return handleMcpGroupError(c, error);
+  }
+});
+
 app.post("/webhooks/:id_flow_request/run", async (c) => {
   if (!isWebhookMode()) {
     return c.text("Webhook mode is disabled", 403);
@@ -272,14 +439,26 @@ await start(mcpServer)
 const transport = new StreamableHTTPTransport();
 
 app.all("/mcp", async (c) => {
-  const unauthorized = checkApiKey(c);
-  if (unauthorized) return unauthorized;
+  const auth = await resolveMcpAuth(c);
+  if (!auth) return c.text("Unauthorized", 401);
 
-  if (!mcpServer.isConnected()) {
-    await mcpServer.connect(transport);
+  if (auth.kind === "admin") {
+    if (!mcpServer.isConnected()) {
+      await mcpServer.connect(transport);
+    }
+    return transport.handleRequest(c as any);
   }
 
-  return transport.handleRequest(c);
+  const groupServer = await createFilteredMcpServer(
+    {
+      name: `run-flow-requests-remotely-mcp-group-${auth.group.name}`,
+      version: "1.0.0",
+    },
+    new Set(auth.group.tools),
+  );
+  const groupTransport = new StreamableHTTPTransport();
+  await groupServer.connect(groupTransport);
+  return groupTransport.handleRequest(c as any);
 });
 
 Deno.serve({ port: 7000 }, app.fetch);

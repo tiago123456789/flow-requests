@@ -2,7 +2,7 @@ import { getDb } from "../db/knex.ts";
 import { McpServer } from "npm:@modelcontextprotocol/sdk/server/mcp.js";
 
 export default function (mcpServer: McpServer, createLoggedTool: any) {
-  mcpServer.tool(
+  return mcpServer.tool(
     "get_webhooks",
     "Return the webhooks from Flow requests created",
     {},

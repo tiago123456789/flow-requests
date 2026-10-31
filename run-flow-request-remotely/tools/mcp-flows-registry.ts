@@ -5,8 +5,21 @@ import { getFlowRequestExecutionData } from "../utils/flow-request-data.util.ts"
 import type { McpServer } from "npm:@modelcontextprotocol/sdk/server/mcp.js";
 import type { RegisteredTool } from "npm:@modelcontextprotocol/sdk/server/mcp.js";
 
-// Tracks currently registered dynamic tools by MCP tool name.
-export const dynamicTools = new Map<string, RegisteredTool>();
+// Tracks currently registered dynamic tools per MCP server. Group views use
+// their own server instance, so registrations must never leak between views.
+const dynamicToolsByServer = new WeakMap<
+  McpServer,
+  Map<string, RegisteredTool>
+>();
+
+function getDynamicTools(mcpServer: McpServer): Map<string, RegisteredTool> {
+  let tools = dynamicToolsByServer.get(mcpServer);
+  if (!tools) {
+    tools = new Map<string, RegisteredTool>();
+    dynamicToolsByServer.set(mcpServer, tools);
+  }
+  return tools;
+}
 
 export type SyncResult = {
   added: string[];
@@ -21,15 +34,18 @@ export async function syncMcpFlowTools(
     toolName: string,
     handler: (args: any) => Promise<any>,
   ) => (args: any) => Promise<any>,
+  allowedToolNames?: ReadonlySet<string>,
 ): Promise<SyncResult> {
   const db = getDb();
   const rows = await db("mcp_flows").select("*");
+  const dynamicTools = getDynamicTools(mcpServer);
 
   const result: SyncResult = { added: [], updated: [], removed: [], skipped: [] };
   const seenNames = new Set<string>();
 
   for (const row of rows) {
     const name = row.name as string;
+    if (allowedToolNames && !allowedToolNames.has(name)) continue;
     seenNames.add(name);
 
     let shape: Record<string, any>;
