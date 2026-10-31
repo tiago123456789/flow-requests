@@ -213,6 +213,10 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
       </Button>
       &nbsp;
       <Button onClick={() => setIsListMcpsOpen(true)}>List MCPS</Button>
+      &nbsp;
+      <Link href={"/mcp-groups"}>
+        <Button variant="outline">MCP Groups</Button>
+      </Link>
       <br />
       <br />
       <table className="min-w-full divide-y divide-gray-200">

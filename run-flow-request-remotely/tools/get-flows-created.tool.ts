@@ -2,7 +2,7 @@ import { getDb } from "../db/knex.ts";
 import { McpServer } from "npm:@modelcontextprotocol/sdk/server/mcp.js";
 
 export default function (mcpServer: McpServer, createLoggedTool: any) {
-  mcpServer.tool(
+  return mcpServer.tool(
     "get_flow_created",
     "Return the flows created",
     createLoggedTool("get_flow_created", async () => {

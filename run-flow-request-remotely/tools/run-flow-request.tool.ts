@@ -5,7 +5,7 @@ import { run } from "../utils/execute-flow.util.ts";
 import { getFlowRequestExecutionData } from "../utils/flow-request-data.util.ts";
 
 export default function (mcpServer: McpServer, createLoggedTool: any) {
-    mcpServer.tool(
+    return mcpServer.tool(
         "run_flow_request",
         "Run flow request by id someone",
         {

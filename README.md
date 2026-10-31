@@ -25,6 +25,8 @@ Flow Requests is a visual workflow builder for API testing and automation. Conne
 
 - **Convert automations into MCP tools**: Give each tool a name, description, and input schema, then make it available to connected MCP clients.
 
+- **MCP groups**: Scope an MCP client to a selected set of tools with its own revocable `mg_...` JWT API key. [Learn more](#mcp-groups).
+
 - **Copy and paste flows**: Copy a flow and paste it into a new one to reuse its nodes, connections, and environment settings instead of rebuilding the workflow.
 
 - **Extensible plugins**: Add custom nodes to connect external services or implement workflow-specific logic.
@@ -117,6 +119,69 @@ For an AI-agent-oriented, step-by-step reference, see [Create a custom plugin](s
 ## Remote workflow runner
 
 Run saved Flow Requests workflows through a remote HTTP and MCP service. See the [remote runner documentation](run-flow-request-remotely/README.MD) for its MCP tools, configuration, and Docker build and usage instructions.
+
+## MCP groups
+
+MCP groups let you give an AI client a limited view of the remote MCP server. Each group selects which built-in and dynamic tools that client can list and call, and receives its own revocable `mg_...` API key. Use groups to give a person, team, or project only the tools they need instead of sharing the admin key.
+
+### How it works
+
+- The admin `API_KEY` exposes every tool and can manage groups.
+- An `mg_...` group token exposes only the tools selected for its group.
+- Group tokens are HS256 JWTs with a one-year expiration. They are stored in PostgreSQL, so resetting a token or deleting its group revokes access immediately.
+
+### Create and manage groups in the app
+
+1. Open **Flows → MCP Groups**.
+2. Enter the remote endpoint and admin API key, then select **Save**. The app stores this connection for its other remote features.
+3. Select **Create group**, enter a name, and choose the tools to expose. Use search to filter, **Select all** or **Clear** to adjust the selection, and the **built-in**/**dynamic** badges to tell tool types apart.
+4. Select **Create group**. Copy the `mg_...` token from the dialog and store it securely; it is shown only when the group is created or its token is reset.
+
+From the same page you can edit a group's name and tools, remove a single tool, reset its token, or delete the group.
+
+### Connect an MCP client
+
+Configure the client with the remote MCP endpoint and the group token, either as the `api-key` query parameter:
+
+```text
+http://ip_or_domain_where_docker_running:7000/mcp?api-key=mg_group_token
+```
+
+or as the `api-key` header. For example, in OpenCode choose **Remote** during `opencode mcp add` and use the URL above. The client will only list and invoke the group's selected tools.
+
+### Manage groups with the API
+
+Group management routes require the admin `API_KEY`; group tokens are accepted only by the `/mcp` endpoint.
+
+```bash
+# List the built-in and dynamic tools available to groups
+curl -H 'api-key: replace-with-a-secret-key' \
+  http://localhost:7000/mcp-tools
+
+# Create a group and receive its token
+curl -X POST http://localhost:7000/mcp-groups \
+  -H 'api-key: replace-with-a-secret-key' \
+  -H 'content-type: application/json' \
+  -d '{"name":"employee","tools":["get_flow_created","run_flow_request"]}'
+
+# Reset the group token; the previous token stops working immediately
+curl -X POST http://localhost:7000/mcp-groups/group-id/reset-token \
+  -H 'api-key: replace-with-a-secret-key'
+
+# Remove one tool from the group
+curl -X DELETE http://localhost:7000/mcp-groups/group-id/tools/run_flow_request \
+  -H 'api-key: replace-with-a-secret-key'
+```
+
+See the [remote runner documentation](run-flow-request-remotely/README.MD) for the complete route table and configuration.
+
+### Security notes
+
+- Store group tokens securely. A token cannot be viewed again later; reset the group token if you lose it.
+- Updating a group's tools changes what its existing token can access.
+- Reset a token or delete a group to revoke access.
+- Changing `MCP_TOKEN_SECRET` invalidates every existing group token. If unset, tokens are signed with `API_KEY`.
+- A group token can create new groups only with tools already available to that group.
 
 ## AI agent skills
 

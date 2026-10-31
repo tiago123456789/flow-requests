@@ -3,7 +3,7 @@ import { McpServer } from "npm:@modelcontextprotocol/sdk/server/mcp.js";
 import z from "npm:zod";
 
 export default function (mcpServer: McpServer, createLoggedTool: any) {
-  mcpServer.tool(
+  return mcpServer.tool(
     "save_flow_request",
     "Save a flow request by name, update the register if the name already exists",
     {

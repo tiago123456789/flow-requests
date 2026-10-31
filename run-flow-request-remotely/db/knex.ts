@@ -83,6 +83,44 @@ export async function initDatabase() {
   } else {
     console.log("Table mcp_flows already exists");
   }
+
+  const mcpGroupsExists = await database.schema.hasTable("mcp_groups");
+  if (!mcpGroupsExists) {
+    await database.schema.raw(`
+      CREATE TABLE mcp_groups (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(255) NOT NULL UNIQUE,
+        jwt_token TEXT NOT NULL UNIQUE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        CONSTRAINT mcp_groups_name_not_blank CHECK (length(trim(name)) > 0)
+      )
+    `);
+    console.log("Table mcp_groups created successfully");
+  } else {
+    console.log("Table mcp_groups already exists");
+  }
+
+  const mcpGroupToolsExists = await database.schema.hasTable("mcp_group_tools");
+  if (!mcpGroupToolsExists) {
+    await database.schema.raw(`
+      CREATE TABLE mcp_group_tools (
+        group_id UUID NOT NULL
+          REFERENCES mcp_groups(id) ON DELETE CASCADE,
+        tool_name VARCHAR(64) NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+        PRIMARY KEY (group_id, tool_name),
+        CONSTRAINT mcp_group_tools_name_not_blank CHECK (length(trim(tool_name)) > 0)
+      )
+    `);
+    await database.schema.raw(
+      `CREATE INDEX IF NOT EXISTS idx_mcp_group_tools_tool_name ON mcp_group_tools(tool_name)`,
+    );
+    console.log("Table mcp_group_tools created successfully");
+  } else {
+    console.log("Table mcp_group_tools already exists");
+  }
 }
 
 export function isWebhookMode() {

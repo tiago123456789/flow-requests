@@ -23,8 +23,9 @@ function errorResult(message: string) {
 export default function (
   mcpServer: McpServer,
   createLoggedTool: any,
+  context?: { allowedTools: ReadonlySet<string> | null },
 ) {
-  mcpServer.tool(
+  return mcpServer.tool(
     "save_flow_request_as_tool",
     "Create a new flow request and register it as a dynamic MCP tool",
     {
@@ -157,8 +158,12 @@ export default function (
         const refreshResult = await refreshMcpTools(
           mcpServer,
           createLoggedTool,
+          context?.allowedTools ?? undefined,
         );
+        const visibleInCurrentView = !context?.allowedTools ||
+          context.allowedTools.has(normalizedName);
         if (
+          visibleInCurrentView &&
           !refreshResult.added.includes(normalizedName) &&
           !refreshResult.updated.includes(normalizedName)
         ) {
@@ -170,7 +175,11 @@ export default function (
             await trx("flow_requests").where("id", flowRequestId).del();
           });
           // Run the same refresh tool operation again to remove any partial registration.
-          await refreshMcpTools(mcpServer, createLoggedTool);
+          await refreshMcpTools(
+            mcpServer,
+            createLoggedTool,
+            context?.allowedTools ?? undefined,
+          );
           return errorResult(
             `Flow saved but MCP tool refresh failed: ${reason}`,
           );
@@ -179,10 +188,11 @@ export default function (
         return {
           content: [{
             type: "text" as const,
-            text:
-              `Flow request created and MCP tool registered. flow_request_id=${flowRequestId}, mcp_flow_id=${mcpFlowId}, tool=${normalizedName}. Refresh: ${
+            text: visibleInCurrentView
+              ? `Flow request created and MCP tool registered. flow_request_id=${flowRequestId}, mcp_flow_id=${mcpFlowId}, tool=${normalizedName}. Refresh: ${
                 JSON.stringify(refreshResult)
-              }`,
+              }`
+              : `Flow request created and MCP tool saved. flow_request_id=${flowRequestId}, mcp_flow_id=${mcpFlowId}, tool=${normalizedName}. The tool is not part of this MCP group, so it is not available in the current group view.`,
           }],
         };
       },
