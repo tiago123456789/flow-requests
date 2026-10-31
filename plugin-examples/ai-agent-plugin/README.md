@@ -1,18 +1,21 @@
 # AI Agent Plugin
 
-Sends a prompt to a large language model through the OpenRouter API and keeps
-a short rolling conversation history in a Redis (Upstash) session.
+Sends prompts to a large language model through OpenRouter, optionally connects
+to remote MCP servers for tool calling, and can keep conversation history in
+Redis (Upstash).
 
 ## What it is
 
-This plugin acts as a conversational AI agent inside a flow. On each run it
-appends the user prompt to a Redis list keyed by the session id, reads back the
-last 10 messages, and sends them to OpenRouter together with the system prompt.
-The assistant's reply is stored back in Redis and returned to the flow, so
-subsequent runs in the same session keep their context.
+This plugin acts as an AI agent inside a flow. When Redis is configured, it
+loads the last 10 messages for the session, sends them to OpenRouter, and stores
+the exchange for later executions. Without a Redis URL, execution is stateless:
+the node does not create a Redis client or session and sends only the current
+system and user prompts.
 
-Use it when a flow needs to generate text, answer questions, or maintain
-context across multiple executions.
+Optionally, configure one or more remote Streamable HTTP MCP servers. The node
+discovers their tools, exposes them to the OpenRouter model as function-calling
+tools, executes requested MCP calls, and sends the results back to the model
+until it produces a final response.
 
 ## Library name
 
@@ -24,8 +27,8 @@ AiAgentNode
 ```
 
 - npm package: `ai-agent-plugin-flow-request`
-- CDN (browser): https://unpkg.com/ai-agent-plugin-flow-request@1.1.0/dist/bundle.js
-- CDN (server): https://unpkg.com/ai-agent-plugin-flow-request@1.1.0/dist/deno-bundle.js
+- CDN (browser): https://unpkg.com/ai-agent-plugin-flow-request@1.2.0/dist/bundle.js
+- CDN (server): https://unpkg.com/ai-agent-plugin-flow-request@1.2.0/dist/deno-bundle.js
 
 ## Installation
 
@@ -39,13 +42,39 @@ AiAgentNode
 
 | Setting | Type | Required | Description |
 |---|---|---|---|
-| `token` | text | yes | OpenRouter API token. Store it in an env var and reference it with `{{ state.envData.OPENROUTER_TOKEN }}`. |
+| `token` | text | yes | OpenRouter API token. Store it in an env var and reference it with `{{ this.state.envData.OPENROUTER_TOKEN }}`. |
 | `model` | text | yes | OpenRouter model id, e.g. `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`. |
 | `systemPrompt` | textarea | yes | System instruction that defines the agent's behaviour. |
 | `userPrompt` | textarea | yes | The user message. Supports `{{ }}` expressions. |
-| `sessionId` | text | yes | Session key used to store the conversation history in Redis. Use the same value to keep context between runs. |
-| `redisUrl` | text | yes | Upstash Redis REST URL. |
-| `redisToken` | text | yes | Upstash Redis REST token. |
+| `mcpServersJson` | textarea | no | Optional JSON configuration for remote Streamable HTTP MCP servers and request headers. |
+| `redisUrl` | text | no | Upstash Redis REST URL. Omit it to disable conversation history and run statelessly. |
+| `redisToken` | text | conditional | Required only when `redisUrl` is provided. Store it in an env var. |
+| `sessionId` | text | conditional | Required only when `redisUrl` is provided. Reuse it to keep context between runs. |
+
+### Remote MCP tools
+
+`mcpServersJson` accepts an object with an `mcpServers` map. Each entry has a
+remote Streamable HTTP endpoint URL and optional string-valued request headers.
+The headers support Flow Requests expressions, so credentials can come from
+environment variables:
+
+```json
+{
+  "mcpServers": {
+    "flowRequests": {
+      "url": "https://your-flow-server.example.com/mcp",
+      "headers": {
+        "api-key": "{{ this.state.envData.MCP_API_KEY }}"
+      }
+    }
+  }
+}
+```
+
+Use the server's `api-key` header for a Flow Requests remote MCP server. The
+configured server name prefixes discovered tool names sent to the model,
+avoiding collisions when multiple servers expose tools with the same name.
+MCP servers are connected for the current execution and closed afterward.
 
 ## Output
 
@@ -62,23 +91,28 @@ On failure:
 { "ok": false, "error": "..." }
 ```
 
-## Example
+## Example flow node
+
+This MCP-enabled example omits Redis, so every run is stateless:
 
 ```json
 {
   "type": "AiAgentNode",
-  "name": "askAgent",
+  "name": "askMcpAgent",
   "setting": {
-    "token": "{{ state.envData.OPENROUTER_TOKEN }}",
+    "token": "{{ this.state.envData.OPENROUTER_TOKEN }}",
     "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
-    "systemPrompt": "You are a helpful assistant.",
-    "userPrompt": "Summarize this text: {{ steps.fetchDoc.output.data.text }}",
-    "sessionId": "my-session",
-    "redisUrl": "{{ state.envData.UPSTASH_REDIS_URL }}",
-    "redisToken": "{{ state.envData.UPSTASH_REDIS_TOKEN }}"
+    "systemPrompt": "You are a helpful assistant. Use the available tools when needed.",
+    "userPrompt": "Find the flow with ID 42 and summarize its status.",
+    "mcpServersJson": "{\"mcpServers\":{\"flowRequests\":{\"url\":\"https://your-flow-server.example.com/mcp\",\"headers\":{\"api-key\":\"{{ this.state.envData.MCP_API_KEY }}\"}}}}"
   }
 }
 ```
+
+To enable history, provide `redisUrl`, `redisToken`, and `sessionId` together.
+The complete browser flow-builder clipboard payload is in
+[`mcp-agent-flow.json`](./mcp-agent-flow.json). Set `OPENROUTER_API_KEY`,
+`MCP_API_KEY`, and the endpoint URL for your own MCP server before running it.
 
 ## Development
 
@@ -88,9 +122,11 @@ On failure:
 
 ## Caveats
 
-- The OpenRouter token and the Redis credentials are sensitive — always keep
-  them in environment variables.
-- Conversation history is capped to the last 10 messages per session.
+- Keep the OpenRouter token, MCP server credentials, and Redis credentials in
+  environment variables rather than hardcoding them.
+- Conversation history is capped to the last 10 messages per session when Redis
+  is enabled.
+- MCP tool calling is limited to 8 consecutive tool rounds per execution.
 - Model availability, pricing, and rate limits are enforced by OpenRouter.
 
 See `skill.md` for the machine-readable description used by AI agents.
