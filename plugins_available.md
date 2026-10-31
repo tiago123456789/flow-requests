@@ -4,7 +4,7 @@ Use the `libraryName` as the plugin node `type`. Fetch each plugin's `skill.md` 
 
 | Plugin | `libraryName` | Bundle URL | `skill.md` URL |
 |---|---|---|---|
-| AI Agent (`ai-agent-plugin-flow-request@1.2.0`) | `AiAgentNode` | [bundle](https://unpkg.com/ai-agent-plugin-flow-request@1.2.0/dist/bundle.js) | [skill.md](https://unpkg.com/ai-agent-plugin-flow-request@1.2.0/skill.md) |
+| AI Agent (`ai-agent-plugin-flow-request@1.2.1`) | `AiAgentNode` | [bundle](https://unpkg.com/ai-agent-plugin-flow-request@1.2.1/dist/bundle.js) | [skill.md](https://unpkg.com/ai-agent-plugin-flow-request@1.2.1/skill.md) |
 | Code (`code-plugin-flow-requests@1.0.0`) | `CodeNode` | [bundle](https://unpkg.com/code-plugin-flow-requests@1.0.0/dist/bundle.js) | [skill.md](https://unpkg.com/code-plugin-flow-requests@1.0.0/skill.md) |
 | Fake Todos (`fake-todos-plugin@2.0.0`) | `FakeTodosNode` | [bundle](https://unpkg.com/fake-todos-plugin@2.0.0/dist/bundle.js) | [skill.md](https://unpkg.com/fake-todos-plugin@2.0.0/skill.md) |
 | Firecrawl (`firecrawl-plugin-flow-requests@1.1.0`) | `FirecrawlPlugin` | [bundle](https://unpkg.com/firecrawl-plugin-flow-requests@1.1.0/dist/bundle.js) | [skill.md](https://unpkg.com/firecrawl-plugin-flow-requests@1.1.0/skill.md) |
