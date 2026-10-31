@@ -89,9 +89,7 @@ describe("AiAgentNode", () => {
 
     expect(result).toEqual({
       ok: true,
-      data: {
-        choices: [{ message: { role: "assistant", content: "Hi there." } }],
-      },
+      data: "Hi there.",
     });
     expect(Redis).not.toHaveBeenCalled();
     expect(mockPost.mock.calls[0][1].messages.slice(0, 2)).toEqual([
@@ -136,24 +134,20 @@ describe("AiAgentNode", () => {
     const result = await node.execute({
       settings: {
         ...baseSettings,
-        mcpServersJson: JSON.stringify({
+        mcpServersJson: {
           mcpServers: {
             flowRequests: {
               url: "https://example.com/mcp",
               headers: { "api-key": "group-key" },
             },
           },
-        }),
+        },
       },
     } as any);
 
     expect(result).toEqual({
       ok: true,
-      data: {
-        choices: [
-          { message: { role: "assistant", content: "The answer is 42." } },
-        ],
-      },
+      data: "The answer is 42.",
     });
     expect(mockClientInstances).toHaveLength(1);
     expect(mockClientInstances[0].connect).toHaveBeenCalledTimes(1);

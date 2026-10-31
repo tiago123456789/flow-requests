@@ -1,6 +1,6 @@
 {
   "name": "ai-agent-plugin-flow-request",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "AI Agent plugin using OpenRouter API Flow requests",
   "main": "dist/deno-bundle.js",
   "browser": "dist/bundle.js",

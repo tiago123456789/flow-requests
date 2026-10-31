@@ -113,6 +113,14 @@ class AiAgentNode extends NodeBase {
   }
 
   async execute(node: NodeInput): Promise<NodeReturn> {
+    if (
+      node.settings?.mcpServersJson !== undefined &&
+      node.settings.mcpServersJson !== null &&
+      typeof node.settings.mcpServersJson !== "string"
+    ) {
+      node.settings.mcpServersJson = JSON.stringify(node.settings.mcpServersJson);
+    }
+
     const setting = node.settings ?? {};
 
     const token = this.resolveRequired(setting.token, "OpenRouter API token");
@@ -319,6 +327,5 @@ class AiAgentNode extends NodeBase {
     return resolved.length > 0 ? resolved : undefined;
   }
 }
-
 
 export default AiAgentNode;
