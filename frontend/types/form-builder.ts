@@ -26,7 +26,7 @@ interface FormField {
 interface FormConfig {
   title: string;
   buttonText: string;
-  urlToSendFormData: string;
+  description: string;
   inputs: {
     label: string;
     name: string;

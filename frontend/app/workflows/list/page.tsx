@@ -28,6 +28,7 @@ import ListMcpsModal from "@/components/list-mcps-modal";
 import CreateMcpToolModal from "@/components/create-mcp-tool-modal";
 import ScheduleFlowModal from "@/components/schedule-flow-modal";
 import ListScheduledFlowsModal from "@/components/list-scheduled-flows-modal";
+import ListFormsModal from "@/components/list-forms-modal";
 import useRemoteConfig, {
   getRemoteConfig,
   normalizeBaseUrl,
@@ -51,9 +52,11 @@ const WorkflowsList = () => {
   const [savedWebhookId, setSavedWebhookId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isFormBuilderOpen, setIsFormBuilderOpen] = useState(false);
+  const [selectedWorkflowForForm, setSelectedWorkflowForForm] = useState<any>(null);
   const [isConfigureRemoteOpen, setIsConfigureRemoteOpen] = useState(false);
   const [isListMcpsOpen, setIsListMcpsOpen] = useState(false);
   const [isListScheduledFlowsOpen, setIsListScheduledFlowsOpen] = useState(false);
+  const [isListFormsOpen, setIsListFormsOpen] = useState(false);
   const [isCreateMcpOpen, setIsCreateMcpOpen] = useState(false);
   const [selectedWorkflowForMcp, setSelectedWorkflowForMcp] = useState<any>(null);
   const [isScheduleFlowOpen, setIsScheduleFlowOpen] = useState(false);
@@ -223,6 +226,10 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
         Scheduled Flows
       </Button>
       &nbsp;
+      <Button onClick={() => setIsListFormsOpen(true)} variant="outline">
+        Flow forms
+      </Button>
+      &nbsp;
       <Link href={"/mcp-groups"}>
         <Button variant="outline">MCP Groups</Button>
       </Link>
@@ -317,7 +324,10 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
                         Schedule automation
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => setIsFormBuilderOpen(true)}
+                        onClick={() => {
+                          setSelectedWorkflowForForm(workflow);
+                          setIsFormBuilderOpen(true);
+                        }}
                       >
                         Form Builder
                       </DropdownMenuItem>
@@ -472,7 +482,12 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
       </Dialog>
       <FormBuilderModal
         isOpen={isFormBuilderOpen}
-        onClose={() => setIsFormBuilderOpen(false)}
+        onClose={() => {
+          setIsFormBuilderOpen(false);
+          setSelectedWorkflowForForm(null);
+        }}
+        workflow={selectedWorkflowForForm}
+        packages={packages || []}
       />
       <ConfigureRemoteModal
         isOpen={isConfigureRemoteOpen}
@@ -503,6 +518,10 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
       <ListScheduledFlowsModal
         isOpen={isListScheduledFlowsOpen}
         onClose={() => setIsListScheduledFlowsOpen(false)}
+      />
+      <ListFormsModal
+        isOpen={isListFormsOpen}
+        onClose={() => setIsListFormsOpen(false)}
       />
     </div>
   );

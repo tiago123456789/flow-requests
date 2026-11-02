@@ -14,6 +14,7 @@ import { validateMcpFlowPayload } from "./utils/validate-mcp-flow.util.ts";
 import { buildZodRawShape } from "./utils/build-zod-schema.util.ts";
 import { getFlowRequestExecutionData } from "./utils/flow-request-data.util.ts";
 import { getLatestFlowLogs } from "./utils/flow-logs.util.ts";
+import { renderFormHtml } from "./utils/form-render.util.ts";
 import { deleteFlowRequest } from "./utils/delete-flow-request.util.ts";
 import { Cron } from "croner";
 import { startScheduler } from "./scheduler.ts";
@@ -33,6 +34,16 @@ import type { McpGroup } from "./utils/mcp-groups.util.ts";
 
 const app = new Hono();
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const FORM_FIELD_TYPES = new Set([
+  "text",
+  "number",
+  "email",
+  "password",
+  "date",
+  "time",
+  "file",
+  "select",
+]);
 
 app.use("/*", cors());
 
@@ -141,6 +152,203 @@ app.post("/flow-requests", async (c) => {
     .returning("id");
 
   return c.json({ id: result[0].id, created: true }, 201);
+});
+
+app.post("/forms", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  const body = await c.req.json().catch(() => null);
+  const flowRequestId = typeof body?.flow_request_id === "string"
+    ? body.flow_request_id.trim()
+    : "";
+  const description = typeof body?.description === "string"
+    ? body.description.trim()
+    : "";
+  const data = body?.data;
+
+  if (!UUID_PATTERN.test(flowRequestId)) {
+    return c.json({ error: "flow_request_id must be a UUID" }, 400);
+  }
+  if (description.length > 150) {
+    return c.json({ error: "description must be at most 150 characters" }, 400);
+  }
+  if (
+    !data ||
+    typeof data !== "object" ||
+    Array.isArray(data) ||
+    typeof data.title !== "string" ||
+    !data.title.trim() ||
+    typeof data.buttonText !== "string" ||
+    !data.buttonText.trim() ||
+    !Array.isArray(data.inputs) ||
+    data.inputs.length === 0
+  ) {
+    return c.json({ error: "data must contain a title, buttonText, and inputs" }, 400);
+  }
+
+  const fieldNames = new Set<string>();
+  for (const field of data.inputs) {
+    if (
+      !field ||
+      typeof field !== "object" ||
+      typeof field.name !== "string" ||
+      !field.name.trim() ||
+      typeof field.label !== "string" ||
+      !field.label.trim() ||
+      !FORM_FIELD_TYPES.has(field.type) ||
+      fieldNames.has(field.name)
+    ) {
+      return c.json({ error: "data.inputs contains an invalid or duplicate field" }, 400);
+    }
+    fieldNames.add(field.name);
+    if (
+      field.type === "select" &&
+      (!Array.isArray(field.options) ||
+        field.options.length === 0 ||
+        field.options.some((option: any) =>
+          !option || typeof option.label !== "string" ||
+          typeof option.value !== "string" || !option.value
+        ))
+    ) {
+      return c.json({ error: `select field "${field.name}" has invalid options` }, 400);
+    }
+  }
+
+  const db = getDb();
+  const flowRequest = await db("flow_requests").where("id", flowRequestId).first();
+  if (!flowRequest) return c.json({ error: "flow_request_id not found" }, 404);
+
+  const [form] = await db("forms_flows")
+    .insert({
+      data: JSON.stringify({
+        title: data.title.trim(),
+        buttonText: data.buttonText.trim(),
+        inputs: data.inputs,
+      }),
+      description,
+      flow_request_id: flowRequestId,
+    })
+    .returning(["id"]);
+
+  return c.json({
+    id: form.id,
+    render_url: `/forms-render/${form.id}`,
+  }, 201);
+});
+
+app.get("/forms", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  const db = getDb();
+  const rows = await db("forms_flows")
+    .select(
+      "forms_flows.id",
+      "forms_flows.description",
+      "forms_flows.created_at",
+      "forms_flows.flow_request_id",
+      "flow_requests.name as flow_name",
+      db.raw("forms_flows.data->>'title' as title"),
+    )
+    .leftJoin("flow_requests", "forms_flows.flow_request_id", "flow_requests.id")
+    .orderBy("forms_flows.created_at", "desc");
+
+  const forms = rows.map((form: Record<string, any>) => ({
+    ...form,
+    render_url: `/forms-render/${form.id}`,
+  }));
+
+  return c.json({ forms });
+});
+
+app.delete("/forms/:formId", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  const formId = c.req.param("formId");
+  if (!UUID_PATTERN.test(formId)) {
+    return c.json({ error: "formId must be a UUID" }, 400);
+  }
+
+  const deleted = await getDb()("forms_flows").where("id", formId).del();
+  if (!deleted) return c.json({ error: "form not found" }, 404);
+  return c.json({ deleted: true, id: formId });
+});
+
+app.get("/forms-render/:formId", async (c) => {
+  const formId = c.req.param("formId");
+  if (!UUID_PATTERN.test(formId)) {
+    return c.text("Invalid form id", 400);
+  }
+
+  const form = await getDb()("forms_flows").where("id", formId).first();
+  if (!form) return c.text("Form not found", 404);
+
+  const data = typeof form.data === "string" ? JSON.parse(form.data) : form.data;
+  return c.html(renderFormHtml(formId, data));
+});
+
+app.post("/forms-submit/:formId", async (c) => {
+  const formId = c.req.param("formId");
+  if (!UUID_PATTERN.test(formId)) {
+    return c.json({ error: "formId must be a UUID" }, 400);
+  }
+
+  const db = getDb();
+  const form = await db("forms_flows").where("id", formId).first();
+  if (!form) return c.json({ error: "form not found" }, 404);
+
+  const requestBody = await c.req.json().catch(() => null);
+  if (!requestBody || typeof requestBody !== "object" || Array.isArray(requestBody)) {
+    return c.json({ error: "request body must be a JSON object" }, 400);
+  }
+
+  const formData = typeof form.data === "string" ? JSON.parse(form.data) : form.data;
+  const submittedValues: Record<string, string | null> = {};
+  for (const field of formData.inputs) {
+    const value = requestBody[field.name] ?? (field.type === "file" ? null : "");
+    if (value !== null && typeof value !== "string") {
+      return c.json({ error: `field "${field.name}" must be a string` }, 400);
+    }
+    if (field.required && (value === null || !value.trim())) {
+      return c.json({ error: `field "${field.name}" is required` }, 400);
+    }
+    if (
+      field.type === "select" && value !== null && value !== "" &&
+      !field.options.some((option: any) => option.value === value)
+    ) {
+      return c.json({ error: `field "${field.name}" has an invalid option` }, 400);
+    }
+    submittedValues[field.name] = value;
+  }
+
+  const flowRequest = await db("flow_requests")
+    .where("id", form.flow_request_id)
+    .first();
+  if (!flowRequest) return c.json({ error: "linked flow request not found" }, 404);
+
+  const flowData = getFlowRequestExecutionData(flowRequest);
+  const requestHeaders = Object.fromEntries(c.req.raw.headers.entries());
+  const requestQuery = Object.fromEntries(new URL(c.req.url).searchParams);
+
+  try {
+    const workflowEngine = await run(
+      requestHeaders,
+      submittedValues,
+      requestQuery,
+      flowData.plugins,
+      flowData.flow,
+      form.flow_request_id,
+    );
+    return c.json({
+      status: "ok",
+      steps: workflowEngine.getState().steps,
+    });
+  } catch (error) {
+    console.error("Form flow execution failed:", error);
+    return c.json({ error: "Form flow execution failed" }, 500);
+  }
 });
 
 app.delete("/flow-requests/:id", async (c) => {
