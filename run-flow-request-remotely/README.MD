@@ -146,13 +146,18 @@ Requests with that token only list and invoke the group's selected tools. Updati
 
 ## HTTP routes
 
-Protected routes require the admin `api-key` header (or an `api-key` query parameter). The `/mcp` endpoint also accepts `mg_...` group tokens.
+Protected routes require the admin `api-key` header (or an `api-key` query parameter). The `/mcp` endpoint also accepts `mg_...` group tokens. Public form render and submit routes do not require an API key; creating a form does.
 
 | Method and route | Purpose |
 | --- | --- |
 | `GET /health` | Check service availability; no API key required. |
 | `POST /run` | Execute a flow provided in the request body. |
 | `POST /flow-requests` | Create or update a saved flow request. |
+| `POST /forms` | Create a form linked to a saved flow request; returns its ID and relative `render_url`. Requires the admin API key. |
+| `GET /forms` | List forms with their linked flow metadata. Requires the admin API key. |
+| `DELETE /forms/:formId` | Delete a form by UUID. Requires the admin API key. |
+| `GET /forms-render/:formId` | Render a saved form as a server-side React HTML page. |
+| `POST /forms-submit/:formId` | Validate submitted form values and execute its linked flow request. |
 | `DELETE /flow-requests/:id` | Delete a flow request by UUID. |
 | `GET /flow-requests/:id/logs` | Return the last 10 executions of a flow request, newest first. |
 | `POST /scheduled-flows` | Create a UTC cron schedule for a saved flow request. |

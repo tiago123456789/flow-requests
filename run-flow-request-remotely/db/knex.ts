@@ -31,6 +31,26 @@ export async function initDatabase() {
     console.log("Table flow_requests already exists");
   }
 
+  const formsFlowsExists = await database.schema.hasTable("forms_flows");
+  if (!formsFlowsExists) {
+    await database.schema.raw(`
+      CREATE TABLE forms_flows (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        data JSONB NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        flow_request_id UUID NOT NULL REFERENCES flow_requests(id) ON DELETE CASCADE,
+        description VARCHAR(150) NOT NULL DEFAULT ''
+      )
+    `);
+    await database.schema.raw(
+      `CREATE INDEX IF NOT EXISTS idx_forms_flows_flow_request_id ON forms_flows(flow_request_id)`,
+    );
+    console.log("Table forms_flows created successfully");
+  } else {
+    console.log("Table forms_flows already exists");
+  }
+
   // Add the explicit flow/tool metadata columns to databases created by older
   // versions, while keeping `data` available for backward compatibility.
   if (!(await database.schema.hasColumn("flow_requests", "flow"))) {

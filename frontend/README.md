@@ -16,6 +16,18 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Form Builder backend
+
+Set `NEXT_PUBLIC_BACKEND_URL` to the public URL of the `run-flow-request-remotely`
+service before starting or building the frontend. For local development, copy
+`.env.example` to `.env.local` and adjust the value. The frontend is statically
+exported, so this value is embedded at build time and must be configured in the
+frontend deployment environment as well.
+
+The Form Builder also uses the API key saved through **Configure remote** to
+save the selected flow and form. The returned form link points to the backend's
+server-rendered `/forms-render/:formId` page.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

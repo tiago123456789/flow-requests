@@ -13,10 +13,13 @@ import { ToastContainer, toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { FormConfig } from "@/types/form-builder"
 
-const FormPage = () => {
-  
+type LegacyHashFormConfig = Omit<FormConfig, "description"> & {
+  urlToSendFormData: string;
+};
 
-  const [config, setConfig] = useState<FormConfig | null>(null);
+const FormPage = () => {
+
+  const [config, setConfig] = useState<LegacyHashFormConfig | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [fileValues, setFileValues] = useState<Record<string, File | null>>({});
@@ -29,7 +32,7 @@ const FormPage = () => {
     if (!hash) return;
     try {
       const decoded = atob(hash);
-      const parsed: FormConfig = JSON.parse(JSON.parse(decoded));
+      const parsed: LegacyHashFormConfig = JSON.parse(JSON.parse(decoded));
       setConfig(parsed);
 
       const initial: Record<string, string> = {};

@@ -21,6 +21,7 @@ import { Plus, Trash2, X } from "lucide-react";
 import { toast } from "react-toastify";
 import { useState } from "react";
 import { FormConfig, FormField, FieldOption, FieldType } from "@/types/form-builder"
+import { getRemoteConfig } from "@/hooks/useRemoteConfig";
 
 const FIELD_TYPES: { value: FieldType; label: string }[] = [
   { value: "text", label: "Text" },
@@ -36,6 +37,19 @@ const FIELD_TYPES: { value: FieldType; label: string }[] = [
 interface FormBuilderModalProps {
   isOpen: boolean;
   onClose: () => void;
+  workflow: {
+    id: string;
+    name: string;
+    data: {
+      nodes?: unknown[];
+      envData?: unknown[];
+    };
+  } | null;
+  packages: Array<{
+    enabled?: boolean;
+    libraryName: string;
+    url: string;
+  }>;
 }
 
 function createField(): FormField {
@@ -53,21 +67,21 @@ function createOption(): FieldOption {
   return { label: "", value: "" };
 }
 
-const FormBuilderModal = ({ isOpen, onClose }: FormBuilderModalProps) => {
+const FormBuilderModal = ({ isOpen, onClose, workflow, packages }: FormBuilderModalProps) => {
   const [title, setTitle] = useState("Flow requests form");
   const [buttonText, setButtonText] = useState("Confirm data");
-  const [urlToSendFormData, setUrlToSendFormData] = useState("");
+  const [description, setDescription] = useState("");
   const [fields, setFields] = useState<FormField[]>([createField()]);
-  const [createdFormHash, setCreatedFormHash] = useState<string | null>(null);
+  const [createdFormId, setCreatedFormId] = useState<string | null>(null);
   const [formLink, setFormLink] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   const reset = () => {
     setTitle("Flow requests form");
     setButtonText("Confirm data");
-    setUrlToSendFormData("");
+    setDescription("");
     setFields([createField()]);
-    setCreatedFormHash(null);
+    setCreatedFormId(null);
     setFormLink("");
     setIsCreating(false);
   };
@@ -137,8 +151,8 @@ const FormBuilderModal = ({ isOpen, onClose }: FormBuilderModalProps) => {
       toast.error("Please enter a button text");
       return false;
     }
-    if (!urlToSendFormData.trim()) {
-      toast.error("Please enter the URL to send form data");
+    if (!workflow) {
+      toast.error("Select a workflow before creating a form");
       return false;
     }
     if (fields.length === 0) {
@@ -152,6 +166,12 @@ const FormBuilderModal = ({ isOpen, onClose }: FormBuilderModalProps) => {
       }
       if (!field.name.trim()) {
         toast.error("All fields must have a name");
+        return false;
+      }
+      if (
+        fields.some((other) => other.id !== field.id && other.name.trim() === field.name.trim())
+      ) {
+        toast.error("Field names must be unique");
         return false;
       }
       if (field.type === "select") {
@@ -177,6 +197,18 @@ const FormBuilderModal = ({ isOpen, onClose }: FormBuilderModalProps) => {
 
     setIsCreating(true);
     try {
+      const backendBaseUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || "").trim().replace(/\/+$/, "");
+      const { apiKey } = getRemoteConfig();
+      if (!backendBaseUrl) {
+        throw new Error("NEXT_PUBLIC_BACKEND_URL is not configured in the frontend environment");
+      }
+      if (!apiKey) {
+        throw new Error("Configure the remote API key before creating a form");
+      }
+      if (!workflow) {
+        throw new Error("Select a workflow before creating a form");
+      }
+
       const inputs = fields
         .filter((f) => f.label.trim() && f.name.trim())
         .map(
@@ -199,19 +231,59 @@ const FormBuilderModal = ({ isOpen, onClose }: FormBuilderModalProps) => {
       const config: FormConfig = {
         title: title.trim(),
         buttonText: buttonText.trim(),
-        urlToSendFormData: urlToSendFormData.trim(),
+        description: description.trim(),
         inputs,
       };
 
-      const json = JSON.stringify(config, null, 2);
-      const hash = btoa(JSON.stringify(json));
-      const link = `${window.location.origin}/forms?hash=${hash}`;
+      const flowResponse = await fetch(`${backendBaseUrl}/flow-requests`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": apiKey,
+        },
+        body: JSON.stringify({
+          name: workflow.name,
+          plugins: packages,
+          flow: {
+            data: {
+              nodes: workflow.data.nodes || [],
+              envData: workflow.data.envData || [],
+            },
+          },
+        }),
+      });
+      const flowResult = await flowResponse.json().catch(() => ({}));
+      if (!flowResponse.ok || typeof flowResult.id !== "string") {
+        throw new Error(flowResult.error || `Failed to save flow (HTTP ${flowResponse.status})`);
+      }
 
-      setCreatedFormHash(hash);
+      const formResponse = await fetch(`${backendBaseUrl}/forms`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": apiKey,
+        },
+        body: JSON.stringify({
+          data: {
+            title: config.title,
+            buttonText: config.buttonText,
+            inputs: config.inputs,
+          },
+          description: config.description,
+          flow_request_id: flowResult.id,
+        }),
+      });
+      const formResult = await formResponse.json().catch(() => ({}));
+      if (!formResponse.ok || typeof formResult.id !== "string" || typeof formResult.render_url !== "string") {
+        throw new Error(formResult.error || `Failed to save form (HTTP ${formResponse.status})`);
+      }
+
+      const link = new URL(formResult.render_url, `${backendBaseUrl}/`).toString();
+      setCreatedFormId(formResult.id);
       setFormLink(link);
       toast.success("Form created successfully!");
     } catch (error) {
-      toast.error("Failed to create form");
+      toast.error(error instanceof Error ? error.message : "Failed to create form");
     } finally {
       setIsCreating(false);
     }
@@ -232,7 +304,7 @@ const FormBuilderModal = ({ isOpen, onClose }: FormBuilderModalProps) => {
         <DialogHeader>
           <DialogTitle>Form Builder</DialogTitle>
           <div>
-            {!createdFormHash ? (
+            {!createdFormId ? (
               <DialogFooter>
                 <br /><br />
                 <Button variant="outline" onClick={handleClose}>
@@ -254,7 +326,7 @@ const FormBuilderModal = ({ isOpen, onClose }: FormBuilderModalProps) => {
           </div>
         </DialogHeader>
 
-        {!createdFormHash ? (
+        {!createdFormId ? (
           <>
             <div className="space-y-6">
               <div className="space-y-2">
@@ -280,14 +352,16 @@ const FormBuilderModal = ({ isOpen, onClose }: FormBuilderModalProps) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="url-to-send">URL to send form data</Label>
+                <Label htmlFor="form-description">Description</Label>
                 <Input
-                  id="url-to-send"
-                  type="url"
-                  placeholder="https://example.com/api/submit"
-                  value={urlToSendFormData}
-                  onChange={(e) => setUrlToSendFormData(e.target.value)}
+                  id="form-description"
+                  type="text"
+                  maxLength={150}
+                  placeholder="Describe what this form is for"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground">Up to 150 characters.</p>
               </div>
 
               <div className="space-y-4">
