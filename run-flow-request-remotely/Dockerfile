@@ -1,4 +1,4 @@
-FROM denoland/deno:2.6.3
+FROM denoland/deno:2.9.8
 
 ENV API_KEY=""
 ENV MCP_TOKEN_SECRET=""
