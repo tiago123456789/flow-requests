@@ -15,6 +15,8 @@ import { buildZodRawShape } from "./utils/build-zod-schema.util.ts";
 import { getFlowRequestExecutionData } from "./utils/flow-request-data.util.ts";
 import { getLatestFlowLogs } from "./utils/flow-logs.util.ts";
 import { deleteFlowRequest } from "./utils/delete-flow-request.util.ts";
+import { Cron } from "croner";
+import { startScheduler } from "./scheduler.ts";
 import {
   authenticateMcpGroupToken,
   createMcpGroup,
@@ -177,6 +179,87 @@ app.get("/flow-requests/:id/logs", async (c) => {
 
   const logs = await getLatestFlowLogs(id);
   return c.json({ logs });
+});
+
+app.post("/scheduled-flows", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  const body = await c.req.json().catch(() => null);
+  const flowRequestId = typeof body?.flow_request_id === "string"
+    ? body.flow_request_id.trim()
+    : "";
+  const cronExpression = typeof body?.cron_expression === "string"
+    ? body.cron_expression.trim()
+    : "";
+
+  if (!UUID_PATTERN.test(flowRequestId)) {
+    return c.json({ error: "flow_request_id must be a UUID" }, 400);
+  }
+  if (!cronExpression) {
+    return c.json({ error: "cron_expression is required" }, 400);
+  }
+
+  let nextExecution: Date;
+  try {
+    const cron = new Cron(cronExpression, { timezone: "UTC" });
+    const nextRun = cron.nextRuns(1, new Date())[0];
+    if (!nextRun || Number.isNaN(nextRun.getTime())) {
+      return c.json({ error: "cron_expression has no future execution" }, 400);
+    }
+    nextExecution = nextRun;
+  } catch (error) {
+    return c.json({
+      error: error instanceof Error ? error.message : "invalid cron_expression",
+    }, 400);
+  }
+
+  const db = getDb();
+  const flowRequest = await db("flow_requests").where("id", flowRequestId).first();
+  if (!flowRequest) return c.json({ error: "flow_request_id not found" }, 404);
+
+  const [schedule] = await db("scheduled_flows")
+    .insert({
+      flow_request_id: flowRequestId,
+      cron_expression: cronExpression,
+      next_execution_at: nextExecution,
+    })
+    .returning(["id", "flow_request_id", "cron_expression", "created_at", "next_execution_at"]);
+
+  return c.json({ schedule }, 201);
+});
+
+app.get("/scheduled-flows", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  const schedules = await getDb()("scheduled_flows")
+    .select(
+      "scheduled_flows.id",
+      "scheduled_flows.flow_request_id",
+      "scheduled_flows.cron_expression",
+      "scheduled_flows.created_at",
+      "scheduled_flows.next_execution_at",
+      "flow_requests.name as flow_name",
+    )
+    .join("flow_requests", "scheduled_flows.flow_request_id", "flow_requests.id")
+    .orderBy("scheduled_flows.next_execution_at", "asc");
+
+  return c.json({ schedules });
+});
+
+app.delete("/scheduled-flows/:id", async (c) => {
+  const unauthorized = checkApiKey(c);
+  if (unauthorized) return unauthorized;
+
+  const id = c.req.param("id");
+  if (!/^[1-9]\d*$/.test(id)) {
+    return c.json({ error: "id must be a positive integer" }, 400);
+  }
+
+  const deleted = await getDb()("scheduled_flows").where("id", id).del();
+  if (!deleted) return c.json({ error: "scheduled flow not found" }, 404);
+  return c.json({ deleted: true, id });
 });
 
 app.post("/mcp-flows", async (c) => {
@@ -459,6 +542,7 @@ app.post("/webhooks/:id_flow_request/run", async (c) => {
 });
 
 await initDatabase();
+await startScheduler();
 
 await start(mcpServer)
 

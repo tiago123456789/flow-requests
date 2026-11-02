@@ -63,6 +63,26 @@ export async function initDatabase() {
     .whereRaw("jsonb_exists(data, 'schema')")
     .update({ schema: database.raw("data->'schema'") });
 
+  const scheduledFlowsExists = await database.schema.hasTable("scheduled_flows");
+  if (!scheduledFlowsExists) {
+    await database.schema.raw(`
+      CREATE TABLE scheduled_flows (
+        id BIGSERIAL PRIMARY KEY,
+        cron_expression VARCHAR NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        next_execution_at TIMESTAMPTZ NOT NULL,
+        flow_request_id UUID NOT NULL
+          REFERENCES flow_requests(id) ON DELETE CASCADE
+      )
+    `);
+    console.log("Table scheduled_flows created successfully");
+  } else {
+    console.log("Table scheduled_flows already exists");
+  }
+  await database.schema.raw(
+    `CREATE INDEX IF NOT EXISTS idx_scheduled_flows_next_execution_at ON scheduled_flows(next_execution_at)`,
+  );
+
   const mcpFlowsExists = await database.schema.hasTable("mcp_flows");
   if (!mcpFlowsExists) {
     await database.schema.raw(`

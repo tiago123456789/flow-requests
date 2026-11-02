@@ -27,6 +27,8 @@ Flow Requests is a visual workflow builder for API testing and automation. Conne
 
 - **MCP groups**: Scope an MCP client to a selected set of tools with its own revocable `mg_...` JWT API key. [Learn more](#mcp-groups).
 
+- **Scheduled automations**: Schedule workflows with UTC cron expressions and manage their recurring executions from the workflows list.
+
 - **Copy and paste flows**: Copy a flow and paste it into a new one to reuse its nodes, connections, and environment settings instead of rebuilding the workflow.
 
 - **Extensible plugins**: Add custom nodes to connect external services or implement workflow-specific logic.

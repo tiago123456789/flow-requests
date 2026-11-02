@@ -26,6 +26,8 @@ import FormBuilderModal from "@/components/form-builder-modal";
 import ConfigureRemoteModal from "@/components/configure-remote-modal";
 import ListMcpsModal from "@/components/list-mcps-modal";
 import CreateMcpToolModal from "@/components/create-mcp-tool-modal";
+import ScheduleFlowModal from "@/components/schedule-flow-modal";
+import ListScheduledFlowsModal from "@/components/list-scheduled-flows-modal";
 import useRemoteConfig, {
   getRemoteConfig,
   normalizeBaseUrl,
@@ -51,8 +53,11 @@ const WorkflowsList = () => {
   const [isFormBuilderOpen, setIsFormBuilderOpen] = useState(false);
   const [isConfigureRemoteOpen, setIsConfigureRemoteOpen] = useState(false);
   const [isListMcpsOpen, setIsListMcpsOpen] = useState(false);
+  const [isListScheduledFlowsOpen, setIsListScheduledFlowsOpen] = useState(false);
   const [isCreateMcpOpen, setIsCreateMcpOpen] = useState(false);
   const [selectedWorkflowForMcp, setSelectedWorkflowForMcp] = useState<any>(null);
+  const [isScheduleFlowOpen, setIsScheduleFlowOpen] = useState(false);
+  const [selectedWorkflowForSchedule, setSelectedWorkflowForSchedule] = useState<any>(null);
   const promptText = `Role: You are an expert integration engineer specializing in workflow automation and JSON schema mapping.
 Task: Convert a custom "Flow Remote Execution" JSON object into a standard n8n workflow JSON file.
 Input Data:  ${selectedWorkflow ? JSON.stringify(selectedWorkflow.data) : ""}
@@ -214,6 +219,10 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
       &nbsp;
       <Button onClick={() => setIsListMcpsOpen(true)}>List MCPS</Button>
       &nbsp;
+      <Button onClick={() => setIsListScheduledFlowsOpen(true)} variant="outline">
+        Scheduled Flows
+      </Button>
+      &nbsp;
       <Link href={"/mcp-groups"}>
         <Button variant="outline">MCP Groups</Button>
       </Link>
@@ -298,6 +307,14 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
                         }}
                       >
                         Create a MCP&apos;s tool
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedWorkflowForSchedule(workflow);
+                          setIsScheduleFlowOpen(true);
+                        }}
+                      >
+                        Schedule automation
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => setIsFormBuilderOpen(true)}
@@ -473,6 +490,19 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
         }}
         workflow={selectedWorkflowForMcp}
         packages={packages || []}
+      />
+      <ScheduleFlowModal
+        isOpen={isScheduleFlowOpen}
+        onClose={() => {
+          setIsScheduleFlowOpen(false);
+          setSelectedWorkflowForSchedule(null);
+        }}
+        workflow={selectedWorkflowForSchedule}
+        plugins={packages || []}
+      />
+      <ListScheduledFlowsModal
+        isOpen={isListScheduledFlowsOpen}
+        onClose={() => setIsListScheduledFlowsOpen(false)}
       />
     </div>
   );

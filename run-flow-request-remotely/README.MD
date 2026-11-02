@@ -18,6 +18,7 @@ Set these environment variables when starting the container:
 | `API_KEY` | Admin key required for protected HTTP routes and full access to the MCP endpoint. Send it in the `api-key` request header. |
 | `MCP_TOKEN_SECRET` | Secret used to sign MCP group JWTs. Defaults to `API_KEY` when omitted. Changing it invalidates all existing group tokens. |
 | `DB_URL` | PostgreSQL connection URL used to store flow requests, MCP flow definitions, and MCP groups. |
+| `QUEUE_DB_URL` | Required PostgreSQL connection URL used by BullMQ for scheduler and scheduled-flow queues. It may point to the same database as `DB_URL`. |
 | `WEBHOOK_MODE` | Set to `true` to enable the webhook execution route. Defaults to `false`. |
 
 The `.env` file is excluded from the Docker build context. Provide configuration to the running container rather than relying on a local `.env` file.
@@ -41,6 +42,7 @@ docker run --rm \
   -e API_KEY='replace-with-a-secret-key' \
   -e MCP_TOKEN_SECRET='replace-with-a-separate-signing-secret' \
   -e DB_URL='postgres://user:password@host:5432/database' \
+  -e QUEUE_DB_URL='postgres://user:password@host:5432/database' \
   -e WEBHOOK_MODE='false' \
   flow-requests-remote:local
 ```
@@ -152,6 +154,9 @@ Protected routes require the admin `api-key` header (or an `api-key` query param
 | `POST /flow-requests` | Create or update a saved flow request. |
 | `DELETE /flow-requests/:id` | Delete a flow request by UUID. |
 | `GET /flow-requests/:id/logs` | Return the last 10 executions of a flow request, newest first. |
+| `POST /scheduled-flows` | Create a UTC cron schedule for a saved flow request. |
+| `GET /scheduled-flows` | List schedules and their flow names. |
+| `DELETE /scheduled-flows/:id` | Delete a scheduled flow by its numeric ID. |
 | `POST /mcp-flows`, `GET /mcp-flows` | Create an MCP flow or list registered MCP flows. |
 | `GET`, `PUT`, `DELETE /mcp-flows/:id` | Inspect, update, or delete an MCP flow by ID. |
 | `POST /mcp-flows/refresh` | Synchronize registered MCP tools with the database. |
@@ -162,3 +167,14 @@ Protected routes require the admin `api-key` header (or an `api-key` query param
 | `DELETE /mcp-groups/:id/tools/:toolName` | Remove a tool from an MCP group. |
 | `POST /webhooks/:id_flow_request/run` | Execute a saved flow request by UUID; requires `WEBHOOK_MODE=true`. |
 | `/mcp` | MCP Streamable HTTP endpoint. Accepts the admin key or an `mg_...` group token. |
+
+Create a schedule with a five-field cron expression (UTC):
+
+```bash
+curl -X POST http://localhost:7000/scheduled-flows \
+  -H 'api-key: replace-with-a-secret-key' \
+  -H 'content-type: application/json' \
+  -d '{"flow_request_id":"flow-request-uuid","cron_expression":"0 9 * * *"}'
+```
+
+The runner polls for due schedules every five seconds, queues each flow request, and records its next cron occurrence. Deleting a flow request also deletes its schedules.
