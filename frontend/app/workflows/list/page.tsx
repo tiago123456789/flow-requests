@@ -271,6 +271,9 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
                       <DropdownMenuItem
                         onClick={() => {
                           setSelectedWorkflowForRun(workflow);
+                          const remote = getRemoteConfig();
+                          setRemoteEndpoint(remote.baseUrl);
+                          setRemoteApiKey(remote.apiKey);
                           setIsRunModalOpen(true);
                         }}
                       >
@@ -365,7 +368,7 @@ Output Constraint: By asking for "only raw JSON," you ensure the response is cle
                 <Label htmlFor="api-key">API Key</Label>
                 <Input
                   id="api-key"
-                  type="text"
+                  type="password"
                   placeholder="Enter your API key"
                   value={remoteApiKey}
                   onChange={(e) => setRemoteApiKey(e.target.value)}
