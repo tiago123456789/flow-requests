@@ -1,0 +1,72 @@
+{
+  "name": "Stateless MCP AI Agent",
+  "envData": [],
+  "originalWorkflow": {
+    "nodes": [
+      {
+        "id": "1",
+        "type": "start",
+        "position": { "x": 250, "y": 100 },
+        "data": {
+          "label": "Start",
+          "name": "trigger_start_1",
+          "isCustomNode": false
+        },
+        "width": 115,
+        "height": 90,
+        "selected": false,
+        "positionAbsolute": { "x": 250, "y": 100 },
+        "dragging": false
+      },
+      {
+        "id": "2",
+        "type": "AiAgentNode",
+        "position": { "x": 250, "y": 250 },
+        "data": {
+          "label": "AiAgentNode",
+          "name": "askMcpAgent",
+          "type": "AiAgentNode",
+          "isCustomNode": true,
+          "description": "AI Agent plugin using OpenRouter with optional remote MCP tools",
+          "color": "text-purple-500",
+          "bgColor": "bg-purple-50",
+          "borderColor": "border-purple-200",
+          "token": "{{ this.state.envData.OPENROUTER_API_KEY }}",
+          "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "systemPrompt": "You are a helpful assistant. Use the available tools when needed.",
+          "userPrompt": "Find the flow with ID 42 and summarize its status.",
+          "mcpServersJson": "{\"mcpServers\":{\"flowRequests\":{\"url\":\"https://your-flow-server.example.com/mcp\",\"headers\":{\"api-key\":\"{{ this.state.envData.MCP_API_KEY }}\"}}}}",
+          "sessionId": null,
+          "redisUrl": null,
+          "redisToken": null,
+          "headers": [{}],
+          "body": [{}],
+          "properties": [
+            { "label": "OpenRouter API Token", "name": "token", "type": "text", "required": true, "default": null },
+            { "label": "LLM Model", "name": "model", "type": "text", "required": true, "default": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free" },
+            { "label": "System Prompt", "name": "systemPrompt", "type": "textarea", "required": true, "default": null },
+            { "label": "User Prompt", "name": "userPrompt", "type": "textarea", "required": true, "default": null },
+            { "label": "MCP Servers (JSON)", "name": "mcpServersJson", "type": "textarea", "required": false, "default": null },
+            { "label": "Session id (optional; enables Redis conversation history)", "name": "sessionId", "type": "text", "required": false, "default": null },
+            { "label": "Redis URL (optional; omit for stateless runs)", "name": "redisUrl", "type": "text", "required": false, "default": null },
+            { "label": "Redis token (required when Redis URL is provided)", "name": "redisToken", "type": "text", "required": false, "default": null }
+          ]
+        },
+        "width": 265,
+        "height": 90,
+        "selected": false,
+        "positionAbsolute": { "x": 250, "y": 250 },
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "1",
+        "sourceHandle": null,
+        "target": "2",
+        "targetHandle": null,
+        "id": "reactflow__edge-1-2"
+      }
+    ]
+  }
+}
