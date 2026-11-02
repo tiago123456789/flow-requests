@@ -27,6 +27,8 @@ Flow Requests is a visual workflow builder for API testing and automation. Conne
 
 - **MCP groups**: Scope an MCP client to a selected set of tools with its own revocable `mg_...` JWT API key. [Learn more](#mcp-groups).
 
+- **Scheduled automations**: Schedule workflows with UTC cron expressions and manage their recurring executions from the workflows list.
+
 - **Copy and paste flows**: Copy a flow and paste it into a new one to reuse its nodes, connections, and environment settings instead of rebuilding the workflow.
 
 - **Extensible plugins**: Add custom nodes to connect external services or implement workflow-specific logic.
@@ -118,7 +120,7 @@ For an AI-agent-oriented, step-by-step reference, see [Create a custom plugin](s
 
 ## Remote workflow runner
 
-Run saved Flow Requests workflows through a remote HTTP and MCP service. See the [remote runner documentation](run-flow-request-remotely/README.MD) for its MCP tools, configuration, and Docker build and usage instructions.
+Run saved Flow Requests workflows through a remote HTTP and MCP service. Scheduled-flow processing is optional: set `QUEUE_DB_URL` in the runner deployment to start its scheduler and queue workers. If it is unset, the API runs without scheduled executions. See the [remote runner documentation](run-flow-request-remotely/README.MD) for configuration and Docker usage instructions.
 
 ## MCP groups
 
