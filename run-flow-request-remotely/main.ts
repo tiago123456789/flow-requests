@@ -542,7 +542,13 @@ app.post("/webhooks/:id_flow_request/run", async (c) => {
 });
 
 await initDatabase();
-await startScheduler();
+if (Deno.env.get("QUEUE_DB_URL")) {
+  await startScheduler();
+} else {
+  console.warn(
+    "QUEUE_DB_URL is not configured; scheduled-flow processing is disabled",
+  );
+}
 
 await start(mcpServer)
 
