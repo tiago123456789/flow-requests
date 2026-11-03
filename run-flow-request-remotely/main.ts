@@ -15,6 +15,7 @@ import { buildZodRawShape } from "./utils/build-zod-schema.util.ts";
 import { getFlowRequestExecutionData } from "./utils/flow-request-data.util.ts";
 import { getLatestFlowLogs } from "./utils/flow-logs.util.ts";
 import { renderFormHtml } from "./utils/form-render.util.ts";
+import { validateFormFlowData } from "./utils/form-flow.util.ts";
 import { deleteFlowRequest } from "./utils/delete-flow-request.util.ts";
 import { Cron } from "croner";
 import { startScheduler } from "./scheduler.ts";
@@ -34,17 +35,6 @@ import type { McpGroup } from "./utils/mcp-groups.util.ts";
 
 const app = new Hono();
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const FORM_FIELD_TYPES = new Set([
-  "text",
-  "number",
-  "email",
-  "password",
-  "date",
-  "time",
-  "file",
-  "select",
-]);
-
 app.use("/*", cors());
 
 
@@ -173,46 +163,9 @@ app.post("/forms", async (c) => {
   if (description.length > 150) {
     return c.json({ error: "description must be at most 150 characters" }, 400);
   }
-  if (
-    !data ||
-    typeof data !== "object" ||
-    Array.isArray(data) ||
-    typeof data.title !== "string" ||
-    !data.title.trim() ||
-    typeof data.buttonText !== "string" ||
-    !data.buttonText.trim() ||
-    !Array.isArray(data.inputs) ||
-    data.inputs.length === 0
-  ) {
-    return c.json({ error: "data must contain a title, buttonText, and inputs" }, 400);
-  }
-
-  const fieldNames = new Set<string>();
-  for (const field of data.inputs) {
-    if (
-      !field ||
-      typeof field !== "object" ||
-      typeof field.name !== "string" ||
-      !field.name.trim() ||
-      typeof field.label !== "string" ||
-      !field.label.trim() ||
-      !FORM_FIELD_TYPES.has(field.type) ||
-      fieldNames.has(field.name)
-    ) {
-      return c.json({ error: "data.inputs contains an invalid or duplicate field" }, 400);
-    }
-    fieldNames.add(field.name);
-    if (
-      field.type === "select" &&
-      (!Array.isArray(field.options) ||
-        field.options.length === 0 ||
-        field.options.some((option: any) =>
-          !option || typeof option.label !== "string" ||
-          typeof option.value !== "string" || !option.value
-        ))
-    ) {
-      return c.json({ error: `select field "${field.name}" has invalid options` }, 400);
-    }
+  const validation = validateFormFlowData(data);
+  if (!validation.data) {
+    return c.json({ error: validation.error ?? "Invalid form data" }, 400);
   }
 
   const db = getDb();
@@ -222,9 +175,7 @@ app.post("/forms", async (c) => {
   const [form] = await db("forms_flows")
     .insert({
       data: JSON.stringify({
-        title: data.title.trim(),
-        buttonText: data.buttonText.trim(),
-        inputs: data.inputs,
+        ...validation.data,
       }),
       description,
       flow_request_id: flowRequestId,

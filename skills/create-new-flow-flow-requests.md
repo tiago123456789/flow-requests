@@ -1,7 +1,7 @@
 # Skill: Create a New Flow in Flow Requests
 
 **Name:** create-new-flow-flow-requests
-**Description:** Reference for AI agents to generate valid Flow Requests automation flows in JSON format. Covers choosing the browser or export format, every native node type, the expression syntax, the dual data model, plugin nodes, and real-world composition patterns.
+**Description:** Reference for AI agents to generate valid Flow Requests automation flows in JSON format, including flows triggered by remote forms. Covers browser and export formats, native node types, expressions, the dual data model, plugins, MCP form tools, and composition patterns.
 
 ---
 
@@ -23,10 +23,11 @@ Saved flows are stored in an IndexedDB database on the client and can be exporte
 
 ### Choose the output format before generating a flow
 
-Before generating a flow, ask the user: **“Will you run this flow in the Flow Requests browser UI?”** If the user has already specified where they will run it, use that answer without asking again.
+Before generating a flow, ask the user: **“Will you run this flow in the Flow Requests browser UI, export it, or trigger it from a remote form?”** If the user has already specified the destination or wants a form-triggered automation, do not ask again.
 
-- **No — not in the browser:** Use the existing export format: a top-level object with `plugins` and `flows` arrays. Put the saved flow object inside `flows`.
-- **Yes — paste into the browser flow builder:** Return the clipboard payload directly, with exactly these top-level fields:
+- **Export, not browser or form:** Use the existing export format: a top-level object with `plugins` and `flows` arrays. Put the saved flow object inside `flows`.
+- **Yes — paste into the browser flow builder:** Return the clipboard payload directly, with exactly these top-level fields (shown below).
+- **A form should trigger the flow:** Generate the saved-flow data and a matching form definition as described in Section 8.1. The flow must be saved remotely before a form can link to it; do not return a browser clipboard payload as if it were already connected to a hosted form.
 
 ```json
 {
@@ -494,6 +495,73 @@ All string values in `setting` fields support `{{ }}` template expressions. The 
 
 `faker.person`, `faker.internet`, `faker.location`, `faker.company`, `faker.finance`, `faker.date`, `faker.lorem`, `faker.phone`, `faker.image`, `faker.animal`, `faker.vehicle`, `faker.commerce`, `faker.database`, `faker.music`, `faker.system`, `faker.science`, `faker.airline`, `faker.color`, `faker.git`, `faker.hacker`, `faker.helpers`, `faker.datatype`, `faker.random`, `faker.string`, `faker.number`.
 
+### 8.1 Build a remote form that triggers a flow
+
+The Flow Builder in the frontend creates a server-hosted form linked to a saved flow request. The remote runner renders the form at `/forms-render/:formId`; submitting it posts the entered values to `/forms-submit/:formId`, validates them, and executes the linked flow. This is a remote flow execution feature, not the browser-only legacy `/forms?hash=...` page.
+
+#### Connect form fields to flow inputs
+
+Each form input's `name` is the key the automation reads from the incoming request body. Use the exact same spelling in the expression:
+
+```json
+{
+  "type": "api",
+  "name": "submit_request",
+  "setting": {
+    "method": "POST",
+    "url": "https://api.example.com/requests",
+    "headers": [{ "key": "Content-Type", "value": "application/json" }],
+    "body": [
+      { "key": "email", "value": "{{this.state.request.body.email}}" },
+      { "key": "details", "value": "{{this.state.request.body.details}}" }
+    ]
+  },
+  "input": {},
+  "output": {}
+}
+```
+
+The runner supplies the request context as `{ headers, body, query }`; form values are under `this.state.request.body.<fieldName>`. Non-file field values are strings. A file field is submitted as a Base64 data URL, or `null` when no file is selected. Do not use form fields to collect API keys, passwords for automation services, or other flow secrets; keep those values in the flow's `envData` and reference them with `{{this.state.envData.KEY}}`.
+
+#### Form definition
+
+The form `data` object must contain a non-empty `title`, `buttonText`, and non-empty `inputs` array. Supported types are `text`, `number`, `email`, `password`, `date`, `time`, `file`, and `select`. Each input needs a unique, non-empty `name`, a non-empty `label`, and a supported `type`; `required` is optional. Select inputs need one or more `{ "label": "...", "value": "..." }` options with non-empty values. The optional form `description` is separate from `data` and is limited to 150 characters.
+
+Example form data:
+
+```json
+{
+  "title": "Request access",
+  "buttonText": "Send request",
+  "inputs": [
+    { "label": "Work email", "name": "email", "type": "email", "required": true },
+    { "label": "Details", "name": "details", "type": "text", "required": true },
+    {
+      "label": "Access level",
+      "name": "accessLevel",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "label": "Read only", "value": "read" },
+        { "label": "Edit", "value": "edit" }
+      ]
+    }
+  ]
+}
+```
+
+#### Save and link the form using MCP
+
+Use the MCP tools in this order:
+
+1. Save the flow request with `save_flow_request`, passing its name and flow data (including `plugins` and `flow.data.nodes` / `flow.data.envData`). Use the returned flow request UUID.
+2. Call `create_form_flow` with `flowId` set to that UUID, the form `data` object above, and an optional `description`. The tool validates the fields and verifies the saved flow exists.
+3. Share the returned relative `render_url` (for example, `/forms-render/<form-uuid>`) using the remote runner's base URL. The link is only known after the form is created; do not invent an ID or URL.
+
+`get_form_flows` lists existing form definitions, linked flow IDs/names, and render paths. `delete_form_flow` takes a form UUID as `id` and removes only the form; its linked flow request remains. These are admin MCP tools by default. An MCP group can use them only when the admin includes their tool names in that group's allowed tools.
+
+The frontend Form Builder performs the same association: it saves the selected workflow and its plugin registrations, then creates a form referencing the returned `flow_request_id`. Frontend form management and the HTTP management endpoints require the remote runner's admin API key. MCP form tools are available to the admin MCP client and to groups that have been granted the individual tool names. Public rendering and submission do not require the admin key. MCP-generated forms are stored in the same `forms_flows` table and use the same validation and runtime path.
+
 ---
 
 ## 9. Plugin registration (`plugins` array)
@@ -952,7 +1020,12 @@ Execution nodes:
 
 ## 14. Checklist before delivering a generated flow
 
-- [ ] Ask whether the user will run the flow in the Flow Requests browser UI unless they already specified it.
+- [ ] Ask whether the user wants browser paste, an export, or a remote form trigger unless they already specified the destination.
+- [ ] For a form-triggered automation, generate a saved remote flow plus a form definition; do not present a browser clipboard payload as a hosted form.
+- [ ] Every form input name matches the corresponding `this.state.request.body.<fieldName>` expression in the flow.
+- [ ] Form data has a title, button text, valid unique inputs, supported types, and valid select options; keep an optional description at or below 150 characters.
+- [ ] Save the flow request first and use its returned UUID as `flowId` when calling `create_form_flow`; return only the actual render URL produced by the tool.
+- [ ] `get_form_flows` is used to inspect saved form links and associations; `delete_form_flow` receives the form UUID and does not delete the linked flow.
 - [ ] For browser paste, return exactly the root-level `name`, `envData`, and `originalWorkflow` fields; do not include the saved-flow `id`, a `data` wrapper, or compiled `nodes` list.
 - [ ] For non-browser export, use the top-level `plugins` / `flows` envelope and include the saved flow's execution list and visual graph.
 - [ ] In saved/export flows, `data.nodes` starts with a `start` node as the first entry.
