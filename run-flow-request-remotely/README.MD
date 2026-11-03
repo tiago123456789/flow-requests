@@ -106,6 +106,9 @@ Once connected, OpenCode can use the remote runner's built-in tools and any dyna
 | `get_form_flows` | Lists saved forms with their form data, linked flow IDs/names, and public render paths. |
 | `create_form_flow` | Creates a form from its JSON data and links submissions to an existing flow request UUID. Returns the form ID and relative render URL. |
 | `delete_form_flow` | Deletes a form by its UUID without deleting its linked flow request. |
+| `get_scheduled_flows` | Lists scheduled flows with their linked flow names, cron expressions, and next execution times. |
+| `create_scheduled_flow` | Schedules an existing flow request using `flowId` (UUID) and `cronExpression` (evaluated in UTC). |
+| `delete_scheduled_flow` | Deletes a scheduled flow using its positive integer schedule ID. |
 | `refresh_mcp_tools` | Reloads dynamic tools from the database. Use this after creating or updating MCP flows through the HTTP API. |
 | `create_mcp_group` | Creates an MCP group with selected tools and returns its new `mg_...` token. A group token can only create groups using tools available to that group. |
 
@@ -118,6 +121,8 @@ Each MCP flow registered in the database is exposed as a dynamic MCP tool. Its n
 MCP groups let you give an AI client a filtered view of the server. Each group selects a subset of the available built-in and dynamic tools and receives its own `mg_...` JWT API key.
 
 The form management tools (`get_form_flows`, `create_form_flow`, and `delete_form_flow`) are available to admin MCP clients. To expose them to a group token, include the desired tool names when creating or updating the group's allowed tools. A form is created with `create_form_flow` by passing `data` (`title`, `buttonText`, and `inputs`) and `flowId` (the UUID of an existing saved flow request); `description` is optional. Its returned `render_url` is relative to the runner base URL. Form submissions use the same validation and execution path as the public `POST /forms-submit/:formId` route.
+
+The scheduled-flow tools (`get_scheduled_flows`, `create_scheduled_flow`, and `delete_scheduled_flow`) are also available to admin MCP clients and can be granted to MCP groups. Cron expressions are evaluated in UTC using the same cron parser as the scheduling HTTP API. The `id` used by `delete_scheduled_flow` is the schedule's database ID, not an individual queued execution ID.
 
 Use the admin `API_KEY` to manage groups and discover the tool inventory:
 
