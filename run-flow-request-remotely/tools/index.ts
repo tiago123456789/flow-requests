@@ -11,6 +11,9 @@ import createMcpGroup from "./create-mcp-group.tool.ts";
 import getFormFlows from "./get-form-flows.tool.ts";
 import createFormFlow from "./create-form-flow.tool.ts";
 import deleteFormFlow from "./delete-form-flow.tool.ts";
+import getScheduledFlows from "./get-scheduled-flows.tool.ts";
+import deleteScheduledFlow from "./delete-scheduled-flow.tool.ts";
+import createScheduledFlow from "./create-scheduled-flow.tool.ts";
 import { syncMcpFlowTools } from "./mcp-flows-registry.ts";
 import { McpServer } from "npm:@modelcontextprotocol/sdk/server/mcp.js";
 import type {
@@ -33,6 +36,9 @@ const toolRegistrars = new Map<string, ToolRegistrar>([
   ["get_form_flows", getFormFlows],
   ["create_form_flow", createFormFlow],
   ["delete_form_flow", deleteFormFlow],
+  ["get_scheduled_flows", getScheduledFlows],
+  ["delete_scheduled_flow", deleteScheduledFlow],
+  ["create_scheduled_flow", createScheduledFlow],
 ]);
 
 export function createLoggedTool(
