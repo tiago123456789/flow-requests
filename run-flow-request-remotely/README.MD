@@ -103,6 +103,9 @@ Once connected, OpenCode can use the remote runner's built-in tools and any dyna
 | `update_flow_request_as_tool` | Updates a saved flow request and syncs its associated dynamic MCP tool. |
 | `delete_flow_request` | Deletes a flow request, removes its associated MCP flow records, and syncs dynamic tools. |
 | `get_flow_request_logs` | Returns the last 10 executions of a flow request, ordered by `executed_at` descending. |
+| `get_form_flows` | Lists saved forms with their form data, linked flow IDs/names, and public render paths. |
+| `create_form_flow` | Creates a form from its JSON data and links submissions to an existing flow request UUID. Returns the form ID and relative render URL. |
+| `delete_form_flow` | Deletes a form by its UUID without deleting its linked flow request. |
 | `refresh_mcp_tools` | Reloads dynamic tools from the database. Use this after creating or updating MCP flows through the HTTP API. |
 | `create_mcp_group` | Creates an MCP group with selected tools and returns its new `mg_...` token. A group token can only create groups using tools available to that group. |
 
@@ -113,6 +116,8 @@ Each MCP flow registered in the database is exposed as a dynamic MCP tool. Its n
 ## MCP groups
 
 MCP groups let you give an AI client a filtered view of the server. Each group selects a subset of the available built-in and dynamic tools and receives its own `mg_...` JWT API key.
+
+The form management tools (`get_form_flows`, `create_form_flow`, and `delete_form_flow`) are available to admin MCP clients. To expose them to a group token, include the desired tool names when creating or updating the group's allowed tools. A form is created with `create_form_flow` by passing `data` (`title`, `buttonText`, and `inputs`) and `flowId` (the UUID of an existing saved flow request); `description` is optional. Its returned `render_url` is relative to the runner base URL. Form submissions use the same validation and execution path as the public `POST /forms-submit/:formId` route.
 
 Use the admin `API_KEY` to manage groups and discover the tool inventory:
 

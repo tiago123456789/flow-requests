@@ -14,6 +14,9 @@ export const STATIC_TOOL_NAMES = [
   "delete_flow_request",
   "get_flow_request_logs",
   "create_mcp_group",
+  "get_form_flows",
+  "create_form_flow",
+  "delete_form_flow",
 ];
 
 export function validateMcpFlowName(name: unknown): string | null {
