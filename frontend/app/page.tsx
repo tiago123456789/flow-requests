@@ -14,10 +14,12 @@ import {
   Play,
   Save,
   Zap,
-  Shield,
-  Globe,
-  Code,
-  Layers,
+  Bot,
+  CalendarClock,
+  Copy,
+  Puzzle,
+  Server,
+  Users,
 } from "lucide-react";
 
 export default function Home() {
@@ -25,6 +27,11 @@ export default function Home() {
     <main className="flex min-h-screen flex-col">
       <div className="flex h-16 items-center border-b px-4">
         <h1 className="text-xl font-bold">Flow Requests</h1>
+        <nav className="ml-6 flex gap-4 text-sm">
+          <Link href="/docs" className="text-muted-foreground hover:text-foreground">
+            Docs
+          </Link>
+        </nav>
         <Link className="ml-auto" href="/workflows/list">
           <Button>Go to Flows</Button>
         </Link>
@@ -36,34 +43,35 @@ export default function Home() {
               Welcome to Flow Requests
             </CardTitle>
             <CardDescription className="text-center text-lg">
-              Simplify your API testing and workflow automation
+              Build, automate, and expose API workflows — with MCP, scheduling, and shareable forms
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-gray-700">
-              Flow Request revolutionizes how you handle complex API workflows.
-              Whether you're a developer or QA engineer, our platform makes
-              testing intricate flows effortless.
+              Flow Requests lets you compose multi-step API automations in a
+              visual canvas, expose them as MCP tools for AI agents, schedule
+              recurring executions, and share them as public forms — all without
+              leaving your browser.
             </p>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <h3 className="font-semibold text-lg mb-2">
-                  🔗 Seamless Integrations
+                  🤖 MCP &amp; AI Agents
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Import collections from popular tools like Insomnia, Postman,
-                  Bruno, and Apidog. Bring your existing API setups directly
-                  into our builder.
+                  Register any automation as an MCP tool and connect
+                  MCP-compatible clients — Codex, Claude Code, OpenCode, and
+                  others — to run your flows directly from an agent conversation.
                 </p>
               </div>
               <div>
                 <h3 className="font-semibold text-lg mb-2">
-                  🚀 No-Code Simplicity
+                  ⏰ Scheduled Automations
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Collect and organize endpoints just like no-code platforms
-                  such as N8n. Build complex workflows without writing a single
-                  line of code.
+                  Schedule workflows with UTC cron expressions and manage their
+                  recurring executions from the workflows list. Import collections
+                  from Insomnia, Postman, Bruno, and Apidog to get started fast.
                 </p>
               </div>
             </div>
@@ -82,108 +90,135 @@ export default function Home() {
             <Card>
               <CardHeader className="text-center">
                 <GitBranch className="mx-auto h-8 w-8 text-blue-500" />
-                <CardTitle className="text-lg">
-                  Visual Workflow Builder
-                </CardTitle>
+                <CardTitle className="text-lg">Visual Workflow Builder</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 text-center">
-                  Build complex API workflows with an intuitive drag-and-drop
-                  interface.
+                  Connect API requests and workflow nodes in a drag-and-drop
+                  canvas to build and test multi-step automations.
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="text-center">
                 <Upload className="mx-auto h-8 w-8 text-green-500" />
-                <CardTitle className="text-lg">Import Collections</CardTitle>
+                <CardTitle className="text-lg">Import API Collections</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 text-center">
-                  Import from Insomnia, Postman, Bruno, and Apidog seamlessly.
+                  Bring existing requests into Flow Requests from Insomnia,
+                  Postman, Bruno, and Apidog.
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="text-center">
-                <Code className="mx-auto h-8 w-8 text-purple-500" />
-                <CardTitle className="text-lg">Plugins</CardTitle>
+                <Server className="mx-auto h-8 w-8 text-purple-500" />
+                <CardTitle className="text-lg">MCP Server</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 text-center">
-                  Extend functionality with plugins you can create for your
-                  needs.
+                  Register a saved automation as an MCP tool. An AI agent can
+                  call the tool with its declared inputs and execute the flow
+                  through the Flow Requests MCP server.
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="text-center">
-                <Play className="mx-auto h-8 w-8 text-red-500" />
-                <CardTitle className="text-lg">Real-time Testing</CardTitle>
+                <Bot className="mx-auto h-8 w-8 text-indigo-500" />
+                <CardTitle className="text-lg">Connect AI Agents</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 text-center">
-                  Test workflows instantly with live execution and logging.
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="text-center">
-                <Save className="mx-auto h-8 w-8 text-orange-500" />
-                <CardTitle className="text-lg">Export & Import</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600 text-center">
-                  Save and share workflows with JSON export/import
-                  functionality.
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="text-center">
-                <Shield className="mx-auto h-8 w-8 text-indigo-500" />
-                <CardTitle className="text-lg">
-                  We don't store your data
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600 text-center">
-                  All Flows will run in your machine, to be more precise in your
-                  browser
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="text-center">
-                <Globe className="mx-auto h-8 w-8 text-teal-500" />
-                <CardTitle className="text-lg">API Integration</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600 text-center">
-                  Connect to any REST API with comprehensive request options.
+                  Connect MCP-compatible clients — Codex, Claude Code, OpenCode,
+                  and others — to run registered automations from an agent
+                  conversation.
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="text-center">
                 <Zap className="mx-auto h-8 w-8 text-yellow-500" />
-                <CardTitle className="text-lg">No-Code Automation</CardTitle>
+                <CardTitle className="text-lg">Automations as MCP Tools</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 text-center">
-                  Automate complex flows without writing code, like N8n.
+                  Give each tool a name, description, and input schema, then
+                  make it available to connected MCP clients.
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="text-center">
-                <Layers className="mx-auto h-8 w-8 text-pink-500" />
-                <CardTitle className="text-lg">Combine Collections</CardTitle>
+                <Users className="mx-auto h-8 w-8 text-teal-500" />
+                <CardTitle className="text-lg">MCP Groups</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 text-center">
-                  Merge different API collections to create comprehensive
-                  automations.
+                  Scope an MCP client to a selected set of tools with its own
+                  revocable <code className="font-mono text-xs">mg_...</code> JWT
+                  API key.
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="text-center">
+                <CalendarClock className="mx-auto h-8 w-8 text-orange-500" />
+                <CardTitle className="text-lg">Scheduled Automations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 text-center">
+                  Schedule workflows with UTC cron expressions and manage their
+                  recurring executions from the workflows list.
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="text-center">
+                <Copy className="mx-auto h-8 w-8 text-pink-500" />
+                <CardTitle className="text-lg">Copy and Paste Flows</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 text-center">
+                  Copy a flow and paste it into a new one to reuse its nodes,
+                  connections, and environment settings instead of rebuilding
+                  the workflow.
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="text-center">
+                <Puzzle className="mx-auto h-8 w-8 text-red-500" />
+                <CardTitle className="text-lg">Extensible Plugins</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 text-center">
+                  Add custom nodes to connect external services or implement
+                  workflow-specific logic.
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="text-center">
+                <Play className="mx-auto h-8 w-8 text-emerald-500" />
+                <CardTitle className="text-lg">Run and Inspect</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 text-center">
+                  Execute flows and review their results to test API behavior
+                  and troubleshoot workflows.
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="text-center">
+                <Save className="mx-auto h-8 w-8 text-cyan-500" />
+                <CardTitle className="text-lg">Reusable &amp; Shareable Workflows</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 text-center">
+                  Save flows and export or import them as JSON.
                 </p>
               </CardContent>
             </Card>
