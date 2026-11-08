@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/dialog";
 import NativeNodeType from "@/types/native-node-type.type";
 import VariableInput from "./variable-input";
+import { CodeEditor } from "./code-editor";
+import JsonEditorField from "./json-editor-field";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import {
   Tooltip,
@@ -500,6 +502,35 @@ export default function NodeConfigPanel({
                   >
                     {config[property.name]}
                   </textarea>
+                </div>
+              );
+            }
+
+            if (property.type == "code-editor") {
+              return (
+                <div key={property.name} className="space-y-2">
+                  {propertyLabel}
+                  <CodeEditor
+                    value={
+                      config[property.name] || node.data[property.name] || ""
+                    }
+                    onChange={(value) => handleChange(property.name, value)}
+                    className="min-h-[300px]"
+                  />
+                </div>
+              );
+            }
+
+            if (property.type == "json-editor") {
+              return (
+                <div key={property.name} className="space-y-2">
+                  {propertyLabel}
+                  <JsonEditorField
+                    value={
+                      config[property.name] || node.data[property.name] || ""
+                    }
+                    onChange={(value) => handleChange(property.name, value)}
+                  />
                 </div>
               );
             }
