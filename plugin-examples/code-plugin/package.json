@@ -1,6 +1,6 @@
 {
   "name": "code-plugin-flow-requests",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Run custom JavaScript against your data in an isolated node:vm sandbox",
   "main": "dist/deno-bundle.js",
   "browser": "dist/bundle.js",

@@ -46,6 +46,11 @@ class CodeNode extends NodeBase {
       throw new Error("Invalid settings. You need to provide a code");
     }
 
+    const hasFunctionCodeDeclared = /function code\(([a-zA-Z]{1,})?\)/.test(setting.code)
+    if (!hasFunctionCodeDeclared) {
+      throw new Error("You need to declare the function code() { // code here } or function code(data) { // code here }");
+    }
+
     const code = this.parseExpression(setting.code);
 
     let data: any = {};
@@ -60,11 +65,13 @@ class CodeNode extends NodeBase {
 
     const { createContext, runInContext } = await import(/* webpackIgnore: true */ "node:vm");
 
-    const context: { output: any; data: any } = { output: {}, ...data };
+    const context: { output: any; data: any } = { output: {}, data: {...data} };
     createContext(context);
 
     try {
-      runInContext(`output = (() => { return ${code.trim()} })()`, context);
+      runInContext(`
+        ${code.trim()}
+        output = code(data)`, context);
     } catch (error: any) {
       return { ok: false, error: error.message };
     }
@@ -72,5 +79,7 @@ class CodeNode extends NodeBase {
     return { ok: true, data: context.output };
   }
 }
+
+
 
 export default CodeNode;
