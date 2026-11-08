@@ -20,7 +20,7 @@ class CodeNode extends NodeBase {
         {
           label: "Code",
           name: "code",
-          type: "textarea",
+          type: "code-editor",
           required: true,
           default: null,
           // @ts-ignore
@@ -29,7 +29,7 @@ class CodeNode extends NodeBase {
         {
           label: "Data (JSON)",
           name: "data",
-          type: "textarea",
+          type: "json-editor",
           required: false,
           default: null,
           // @ts-ignore
