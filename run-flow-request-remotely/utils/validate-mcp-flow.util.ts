@@ -20,6 +20,9 @@ export const STATIC_TOOL_NAMES = [
   "get_scheduled_flows",
   "delete_scheduled_flow",
   "create_scheduled_flow",
+  "list_mcp_groups",
+  "revoke_mcp_group_token",
+  "delete_mcp_group",
 ];
 
 export function validateMcpFlowName(name: unknown): string | null {
