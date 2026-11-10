@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import prometheusMetricsUtil from "./utils/prometheus-metrics.util.ts";
 import { getDb, initDatabase, isWebhookMode } from "./db/knex.ts";
 import { McpServer } from "npm:@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPTransport } from "jsr:@hono/mcp";
@@ -36,6 +37,51 @@ import type { McpGroup } from "./utils/mcp-groups.util.ts";
 const app = new Hono();
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 app.use("/*", cors());
+
+// ── Prometheus: public metrics endpoint ──────────────────────────────────────
+app.get("/metrics", async (c) => {
+  const registry = prometheusMetricsUtil.getRegistry();
+  const metrics = await registry.metrics();
+  return c.text(metrics, 200, { "Content-Type": registry.contentType });
+});
+
+// ── Prometheus: HTTP instrumentation middleware ───────────────────────────────
+// Records http_requests_total (counter) and http_request_duration_seconds
+// (histogram) for every route with labels {method, route, status_code}.
+// The /metrics route itself is excluded to avoid self-referential noise.
+app.use("/*", async (c, next) => {
+  if (c.req.path === "/metrics") return next();
+
+  const start = performance.now();
+  await next();
+
+  const durationSeconds = (performance.now() - start) / 1000;
+  const method = c.req.method;
+  // routePath is the registered pattern (e.g. /flow-requests/:id/logs),
+  // avoiding high cardinality from raw parameterised paths.
+  const route = c.req.routePath ?? c.req.path;
+  const statusCode = String(c.res.status);
+  const labelNames = ["method", "route", "status_code"];
+  const labels = { method, route, status_code: statusCode };
+
+  // Counter — total requests
+  const counter = prometheusMetricsUtil.getMetrics({
+    name: "http_requests_total",
+    help: "Total number of HTTP requests",
+    type: "counter",
+    labelNames,
+  }) as import("prom-client").Counter;
+  counter.inc(labels);
+
+  // Histogram — request duration (observe pre-measured elapsed value)
+  const histogram = prometheusMetricsUtil.getMetrics({
+    name: "http_request_duration_seconds",
+    help: "HTTP request duration in seconds",
+    type: "histogram",
+    labelNames,
+  }) as import("prom-client").Histogram;
+  histogram.observe(labels, durationSeconds);
+});
 
 
 function getApiKey(c: any): string | undefined {
@@ -102,6 +148,7 @@ app.post("/run", async (c) => {
     body.plugins,
     body.flow,
     body.flow_request_id ?? null,
+    null,
   );
 
   return c.json({
@@ -291,6 +338,7 @@ app.post("/forms-submit/:formId", async (c) => {
       flowData.plugins,
       flowData.flow,
       form.flow_request_id,
+      flowRequest.name ?? null,
     );
     return c.json({
       status: "ok",
@@ -692,6 +740,7 @@ app.post("/webhooks/:id_flow_request/run", async (c) => {
     flowData.plugins,
     flowData.flow,
     id,
+    flowRequest.name ?? null,
   );
 
   return c.json({

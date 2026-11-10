@@ -30,6 +30,7 @@
     "npm:pg-plugin-flow-requests@1.0.6": "1.0.6",
     "npm:pg@^8.13.0": "8.20.0",
     "npm:pkce-challenge@5": "5.0.1",
+    "npm:prom-client@^15.1.3": "15.1.3",
     "npm:react-dom@*": "19.3.1_react@19.3.1",
     "npm:react-dom@19": "19.3.1_react@19.3.1",
     "npm:react@*": "19.3.1",
@@ -150,6 +151,9 @@
       "integrity": "sha512-J1mT1tp4v9aqcRwUtFrdJ94yei2SlIKm243nWK5bCyOPNnnNknaPzjG6a2Aa5OSfXE36rrth0X2OPHpispZTJw==",
       "os": ["win32"],
       "cpu": ["x64"]
+    },
+    "@opentelemetry/api@1.10.0": {
+      "integrity": "sha512-lMkyes8iHrG+mk6WH7X70MdCLI2RS0FwNBY1PyQ8UemaijE2m5mv5A0Niy3HtbYTFrgkUEQjFMXmSAk2hQDuPQ=="
     },
     "@types/estree@1.0.8": {
       "integrity": "sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w=="
@@ -449,7 +453,7 @@
       "dependencies": [
         "axios",
         "core-package-mini-n8n",
-        "ts-loader@9.5.4_typescript@6.0.3_webpack@5.106.2"
+        "ts-loader@9.5.4_typescript@5.9.3_webpack@5.104.1"
       ],
       "scripts": true
     },
@@ -467,7 +471,7 @@
       "dependencies": [
         "axios",
         "core-package-mini-n8n",
-        "ts-loader@9.5.4_typescript@6.0.3_webpack@5.106.2"
+        "ts-loader@9.5.4_typescript@5.9.3_webpack@5.104.1"
       ],
       "scripts": true
     },
@@ -491,6 +495,9 @@
     "baseline-browser-mapping@2.9.13": {
       "integrity": "sha512-WhtvB2NG2wjr04+h77sg3klAIwrgOqnjS49GGudnUPGFFgg7G17y7Qecqp+2Dr5kUDxNRBca0SK7cG8JwzkWDQ==",
       "bin": true
+    },
+    "bintrees@1.0.2": {
+      "integrity": "sha512-VOMgTMwjAaUG580SXn3LacVgjurrbMme7ZZNYGSSV7mmtY6QQRh0Eg3pwIcntQ77DErK1L0NxkbetjcoXzVwKw=="
     },
     "body-parser@2.2.2": {
       "integrity": "sha512-oP5VkATKlNwcgvxi0vM0p/D3n2C3EReYVX+DNYs5TjZFn/oQt2j+4sVJtSMr18pdRr8wjTcBl6LoV+FUwzPmNA==",
@@ -1241,6 +1248,14 @@
         "xtend"
       ]
     },
+    "prom-client@15.1.3": {
+      "integrity": "sha512-6ZiOBfCywsD4k1BN9IX0uZhF+tJkV8q8llP64G5Hajs4JOeVLPCwpPVcpXy3BwYiUGgyJzsJJQeOIv7+hDSq8g==",
+      "dependencies": [
+        "@opentelemetry/api",
+        "tdigest"
+      ],
+      "deprecated": true
+    },
     "proxy-addr@2.0.7": {
       "integrity": "sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==",
       "dependencies": [
@@ -1457,11 +1472,17 @@
     "tarn@3.0.2": {
       "integrity": "sha512-51LAVKUSZSVfI05vjPESNc5vwqqZpbXCsU+/+wxlOrUjk2SnFTt97v9ZgQrD4YmxYW1Px6w2KjaDitCfkvgxMQ=="
     },
+    "tdigest@0.1.3": {
+      "integrity": "sha512-zbRt+lT+/H4fRItHshczHErVCQnitJk8MfMT24MqFJf3YL7SJJPqGIGeuOdvxXxM/AHFzKBl7WoyaYwqO9s3Kw==",
+      "dependencies": [
+        "bintrees"
+      ]
+    },
     "telegram-plugin-flow-requests@1.0.2": {
       "integrity": "sha512-zhx0qWRz8E1TB4i9Nnk/CYpgsRCln1N3a687OqEzqqCHFYZZbjsqvLTt0UESLpfEgyMO3lxtt+tFsFcf44NWRQ==",
       "dependencies": [
         "core-package-mini-n8n",
-        "ts-loader@9.5.4_typescript@6.0.3_webpack@5.106.2"
+        "ts-loader@9.5.4_typescript@5.9.3_webpack@5.104.1"
       ],
       "scripts": true
     },
@@ -1491,16 +1512,6 @@
       "integrity": "sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA=="
     },
     "ts-loader@9.5.4_typescript@5.9.3_webpack@5.104.1": {
-      "integrity": "sha512-nCz0rEwunlTZiy6rXFByQU1kVVpCIgUpc/psFiKVrUwrizdnIbRFu8w7bxhUF0X613DYwT4XzrZHpVyMe758hQ==",
-      "dependencies": [
-        "chalk",
-        "enhanced-resolve",
-        "micromatch",
-        "semver",
-        "source-map@0.7.6"
-      ]
-    },
-    "ts-loader@9.5.4_typescript@6.0.3_webpack@5.106.2": {
       "integrity": "sha512-nCz0rEwunlTZiy6rXFByQU1kVVpCIgUpc/psFiKVrUwrizdnIbRFu8w7bxhUF0X613DYwT4XzrZHpVyMe758hQ==",
       "dependencies": [
         "chalk",
@@ -1664,6 +1675,7 @@
       "npm:hono@^4.7.0",
       "npm:knex@^3.1.0",
       "npm:pg@^8.13.0",
+      "npm:prom-client@^15.1.3",
       "npm:react-dom@19",
       "npm:react@19",
       "npm:zod@^4.4.3"

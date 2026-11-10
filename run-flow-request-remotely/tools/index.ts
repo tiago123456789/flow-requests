@@ -24,6 +24,8 @@ import type {
   ToolContext,
   ToolRegistrar,
 } from "./types.ts";
+import prometheusMetricsUtil from "../utils/prometheus-metrics.util.ts";
+import type { Counter, Histogram } from "prom-client";
 
 const toolRegistrars = new Map<string, ToolRegistrar>([
   ["get_flow_created", getFlowsCreated],
@@ -78,6 +80,55 @@ export function createLoggedTool(
   };
 }
 
+/**
+ * Similar to createLoggedTool but records Prometheus metrics instead of logs.
+ *
+ * Metrics tracked (both labelled with `tool_name`):
+ *  - mcp_tool_calls_total          Counter   — incremented on every invocation
+ *  - mcp_tool_duration_seconds     Histogram — execution time per tool call
+ */
+export function createTrackedTool(
+  toolName: string,
+  handler: (args: any) => Promise<any>,
+) {
+  const labelNames = ["tool_name"];
+  const labels = { tool_name: toolName };
+
+  return async (args: any) => {
+    const counter = prometheusMetricsUtil.getMetrics({
+      name: "mcp_tool_calls_total",
+      help: "Total number of MCP tool calls",
+      type: "counter",
+      labelNames,
+    }) as Counter;
+    counter.inc(labels);
+
+    const histogram = prometheusMetricsUtil.getMetrics({
+      name: "mcp_tool_duration_seconds",
+      help: "MCP tool execution duration in seconds",
+      type: "histogram",
+      labelNames,
+    }) as Histogram;
+    const end = histogram.startTimer(labels);
+
+    try {
+      return await handler(args);
+    } finally {
+      end();
+    }
+  };
+}
+
+// Composes logging + Prometheus tracking for every tool invocation.
+// createTrackedTool wraps the raw handler first (inner),
+// then createLoggedTool wraps the tracked handler (outer).
+function createLoggedAndTrackedTool(
+  toolName: string,
+  handler: (args: any) => Promise<any>,
+) {
+  return createLoggedTool(toolName, createTrackedTool(toolName, handler));
+}
+
 export function registerStaticTools(
   mcpServer: McpServer,
   createLogged: CreateLoggedTool,
@@ -94,16 +145,16 @@ export async function createFilteredMcpServer(
   allowedTools: ReadonlySet<string> | null,
 ): Promise<McpServer> {
   const mcpServer = new McpServer(serverInfo);
-  registerStaticTools(mcpServer, createLoggedTool, { allowedTools });
+  registerStaticTools(mcpServer, createLoggedAndTrackedTool, { allowedTools });
   await syncMcpFlowTools(
     mcpServer,
-    createLoggedTool,
+    createLoggedAndTrackedTool,
     allowedTools ?? undefined,
   );
   return mcpServer;
 }
 
 export async function start(mcpServer: McpServer) {
-  registerStaticTools(mcpServer, createLoggedTool, { allowedTools: null });
-  await syncMcpFlowTools(mcpServer, createLoggedTool);
+  registerStaticTools(mcpServer, createLoggedAndTrackedTool, { allowedTools: null });
+  await syncMcpFlowTools(mcpServer, createLoggedAndTrackedTool);
 }
