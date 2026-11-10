@@ -105,7 +105,7 @@ export async function startScheduler() {
       }
 
       const flowData = getFlowRequestExecutionData(flowRequest);
-      await run({}, {}, {}, flowData.plugins, flowData.flow, flowRequestId);
+      await run({}, {}, {}, flowData.plugins, flowData.flow, flowRequestId, flowRequest.name ?? null);
     },
     queueOptions,
     createPostgresBackend,

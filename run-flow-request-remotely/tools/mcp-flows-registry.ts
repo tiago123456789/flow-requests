@@ -93,6 +93,7 @@ export async function syncMcpFlowTools(
         flowData.plugins,
         flowData.flow,
         flowRequestId,
+        flowRequest.name ?? null,
       );
 
       return {
