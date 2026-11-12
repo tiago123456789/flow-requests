@@ -18,10 +18,19 @@ Set these environment variables when starting the container:
 | `API_KEY` | Admin key required for protected HTTP routes and full access to the MCP endpoint. Send it in the `api-key` request header. |
 | `MCP_TOKEN_SECRET` | Secret used to sign MCP group JWTs. Defaults to `API_KEY` when omitted. Changing it invalidates all existing group tokens. |
 | `DB_URL` | PostgreSQL connection URL used to store flow requests, MCP flow definitions, and MCP groups. |
+| `ENCRYPT_KEY` | Required 32-byte AES-256 key encoded as 64 hexadecimal characters. Encrypts saved flow data and environment values at rest. Keep this key stable and private; losing or changing it makes encrypted flows unreadable. |
 | `QUEUE_DB_URL` | Optional PostgreSQL connection URL used by BullMQ for scheduler and scheduled-flow queues. Set it to enable scheduled-flow processing; it may point to the same database as `DB_URL`. |
 | `WEBHOOK_MODE` | Set to `true` to enable the webhook execution route. Defaults to `false`. |
 
 The `.env` file is excluded from the Docker build context. Provide configuration to the running container rather than relying on a local `.env` file.
+
+Generate an encryption key with:
+
+```bash
+openssl rand -hex 32
+```
+
+Store the output in your deployment's secret manager and provide it as `ENCRYPT_KEY` when starting the runner. The service validates the key at startup. Do not commit the key or change it without first re-encrypting all saved flows.
 
 ## Build the Docker image
 
@@ -41,6 +50,7 @@ docker run --rm \
   -p 7000:7000 \
   -e API_KEY='replace-with-a-secret-key' \
   -e MCP_TOKEN_SECRET='replace-with-a-separate-signing-secret' \
+  -e ENCRYPT_KEY='replace-with-the-64-character-hex-key' \
   -e DB_URL='postgres://user:password@host:5432/database' \
   -e WEBHOOK_MODE='false' \
   flow-requests-remote:local

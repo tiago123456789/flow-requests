@@ -16,6 +16,7 @@
     "npm:alert-message-plugin-flow-requests@1.4.0": "1.4.0",
     "npm:axios@^1.13.2": "1.13.2",
     "npm:bullmq@^6.5.3": "6.5.4_pg@8.20.0",
+    "npm:code-plugin-flow-requests@1.1.0": "1.1.0",
     "npm:code-plugin-flow-requests@latest": "1.0.0",
     "npm:code-plugin@1.0.0": "1.0.0_zod@4.4.3",
     "npm:core-package-mini-n8n@^1.3.0": "1.3.0",
@@ -28,6 +29,7 @@
     "npm:pg-plugin-flow-requests@1.0.4": "1.0.4",
     "npm:pg-plugin-flow-requests@1.0.5": "1.0.5",
     "npm:pg-plugin-flow-requests@1.0.6": "1.0.6",
+    "npm:pg-plugin-flow-requests@2.0.0": "2.0.0",
     "npm:pg@^8.13.0": "8.20.0",
     "npm:pkce-challenge@5": "5.0.1",
     "npm:prom-client@^15.1.3": "15.1.3",
@@ -38,6 +40,7 @@
     "npm:serpapi-plugin-flow-requests@1.0.0": "1.0.0",
     "npm:serpapi-plugin-flow-requests@1.0.1": "1.0.1",
     "npm:telegram-plugin-flow-requests@1.0.2": "1.0.2",
+    "npm:telegram-plugin-flow-requests@2.0.0": "2.0.0",
     "npm:zod@*": "4.4.3",
     "npm:zod@^3.25.34": "3.25.76",
     "npm:zod@^4.4.3": "4.4.3"
@@ -579,6 +582,14 @@
     },
     "code-plugin-flow-requests@1.0.0": {
       "integrity": "sha512-MrLujvPyRnDlJdH66PBj6JCc2h3SeBWF4CAyPcGH2YC6y3cxxwVgY9xkrwIAjkZvdo2Um8SNUqSdGd5aWfPl+w==",
+      "dependencies": [
+        "core-package-mini-n8n",
+        "ts-loader@9.5.4_typescript@7.0.2_webpack@5.108.4"
+      ],
+      "scripts": true
+    },
+    "code-plugin-flow-requests@1.1.0": {
+      "integrity": "sha512-ObhxLxtmZtdDYPH8jUfb8rc2fzYnIxFlwTbg4igoC3bMYJeSaNIbDh+vFudLVQdhTJu1r9YD9yqY/0ioudjdIA==",
       "dependencies": [
         "core-package-mini-n8n",
         "ts-loader@9.5.4_typescript@7.0.2_webpack@5.108.4"
@@ -1186,6 +1197,14 @@
       ],
       "scripts": true
     },
+    "pg-plugin-flow-requests@2.0.0": {
+      "integrity": "sha512-PDIXwiE4AOBCC+BP1PGZ1l/fdMAzEtuGgtEwERsr9fbeidhlCF+H2zSMpWbUHu+VLtwFgCoZyYwbce+bjZcvuw==",
+      "dependencies": [
+        "core-package-mini-n8n",
+        "ts-loader@9.5.4_typescript@7.0.2_webpack@5.108.4"
+      ],
+      "scripts": true
+    },
     "pg-pool@3.13.0_pg@8.20.0": {
       "integrity": "sha512-gB+R+Xud1gLFuRD/QgOIgGOBE2KCQPaPwkzBBGC9oG69pHTkhQeIuejVIk3/cnDyX39av2AxomQiyPT13WKHQA==",
       "dependencies": [
@@ -1483,6 +1502,14 @@
       "dependencies": [
         "core-package-mini-n8n",
         "ts-loader@9.5.4_typescript@5.9.3_webpack@5.104.1"
+      ],
+      "scripts": true
+    },
+    "telegram-plugin-flow-requests@2.0.0": {
+      "integrity": "sha512-ZGgrY3iwEglS7c5+qjoext2NRda76KQPBe8WrFBTSlQateRyzilpyUVAmZv8zNjBaJmTf/iZ8+QbAE4xNlg2Eg==",
+      "dependencies": [
+        "core-package-mini-n8n",
+        "ts-loader@9.5.4_typescript@7.0.2_webpack@5.108.4"
       ],
       "scripts": true
     },

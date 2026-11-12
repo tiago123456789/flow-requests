@@ -1,4 +1,5 @@
 import { getDb } from "../db/knex.ts";
+import { encryptFlowBlobForJsonb } from "../utils/crypto.util.ts";
 import { refreshMcpTools } from "./refresh-mcp-flows.tool.ts";
 import {
   buildZodRawShape,
@@ -117,6 +118,8 @@ export default function (
           name: normalizedName,
           plugins: normalizedPlugins,
         };
+        const encryptedData = await encryptFlowBlobForJsonb(requestData);
+        const encryptedFlow = await encryptFlowBlobForJsonb(normalizedFlow);
 
         let flowRequestId: string;
         let mcpFlowId: string;
@@ -125,8 +128,8 @@ export default function (
             const flowRequestResult = await trx("flow_requests")
               .insert({
                 name: normalizedName,
-                data: JSON.stringify(requestData),
-                flow: JSON.stringify(normalizedFlow),
+                data: encryptedData,
+                flow: encryptedFlow,
                 description: trimmedDescription,
                 schema: JSON.stringify(cleanedSchema),
               })

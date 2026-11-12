@@ -1,4 +1,5 @@
 import knex from "knex";
+import { getEncryptKey } from "../utils/crypto.util.ts";
 
 let db: ReturnType<typeof knex> | null = null;
 
@@ -13,6 +14,10 @@ export function getDb() {
 }
 
 export async function initDatabase() {
+  // Validate ENCRYPT_KEY early so the server fails loudly before it starts
+  // serving requests rather than failing silently on the first save or run.
+  await getEncryptKey();
+
   const database = getDb();
   const exists = await database.schema.hasTable("flow_requests");
   if (!exists) {
