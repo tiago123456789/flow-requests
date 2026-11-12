@@ -120,7 +120,7 @@ For an AI-agent-oriented, step-by-step reference, see [Create a custom plugin](s
 
 ## Remote workflow runner
 
-Run saved Flow Requests workflows through a remote HTTP and MCP service. Scheduled-flow processing is optional: set `QUEUE_DB_URL` in the runner deployment to start its scheduler and queue workers. If it is unset, the API runs without scheduled executions. See the [remote runner documentation](run-flow-request-remotely/README.MD) for configuration and Docker usage instructions.
+Run saved Flow Requests workflows through a remote HTTP and MCP service. Saved flow data, including `envData`, is encrypted at rest with AES-256-GCM. Set `ENCRYPT_KEY` in the runner deployment to a stable 64-character hexadecimal key; generate one with `openssl rand -hex 32`. Keep the key private and unchanged, since encrypted flows cannot be read without it. Scheduled-flow processing is optional: set `QUEUE_DB_URL` in the runner deployment to start its scheduler and queue workers. If it is unset, the API runs without scheduled executions. See the [remote runner documentation](run-flow-request-remotely/README.MD) for configuration and Docker usage instructions.
 
 ## MCP groups
 

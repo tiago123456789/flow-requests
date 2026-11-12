@@ -1,4 +1,8 @@
 import { getDb } from "../db/knex.ts";
+import {
+  encodeJsonbValue,
+  encryptFlowBlobForJsonb,
+} from "../utils/crypto.util.ts";
 import { McpServer } from "npm:@modelcontextprotocol/sdk/server/mcp.js";
 import z from "npm:zod";
 
@@ -28,9 +32,15 @@ export default function (mcpServer: McpServer, createLoggedTool: any) {
           .first();
 
         if (existing) {
+          const encryptedData = await encryptFlowBlobForJsonb(payload);
+          const encryptedFlow = payload.flow
+            ? await encryptFlowBlobForJsonb(payload.flow)
+            : existing.flow == null
+            ? null
+            : encodeJsonbValue(existing.flow);
           await db("flow_requests").where("id", existing.id).update({
-            data: JSON.stringify(payload),
-            flow: payload.flow ? JSON.stringify(payload.flow) : existing.flow,
+            data: encryptedData,
+            flow: encryptedFlow,
             description: payload.description || existing.description,
             schema: payload.schema ? JSON.stringify(payload.schema) : existing.schema,
           });
@@ -44,11 +54,15 @@ export default function (mcpServer: McpServer, createLoggedTool: any) {
           };
         }
 
+        const encryptedData = await encryptFlowBlobForJsonb(payload);
+        const encryptedFlow = payload.flow
+          ? await encryptFlowBlobForJsonb(payload.flow)
+          : null;
         const result = await db("flow_requests")
           .insert({
             name: trimmedName,
-            data: JSON.stringify(payload),
-            flow: payload.flow ? JSON.stringify(payload.flow) : null,
+            data: encryptedData,
+            flow: encryptedFlow,
             description: payload.description || null,
             schema: JSON.stringify(payload.schema || []),
           })

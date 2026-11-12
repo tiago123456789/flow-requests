@@ -27,7 +27,7 @@ export default function (mcpServer: McpServer, createLoggedTool: any) {
             }
 
 
-            const flowData = getFlowRequestExecutionData(flowRequest);
+            const flowData = await getFlowRequestExecutionData(flowRequest);
             await run(
                 body,
                 body,

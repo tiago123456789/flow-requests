@@ -2,6 +2,10 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import prometheusMetricsUtil from "./utils/prometheus-metrics.util.ts";
 import { getDb, initDatabase, isWebhookMode } from "./db/knex.ts";
+import {
+  encodeJsonbValue,
+  encryptFlowBlobForJsonb,
+} from "./utils/crypto.util.ts";
 import { McpServer } from "npm:@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPTransport } from "jsr:@hono/mcp";
 import { run } from "./utils/execute-flow.util.ts"
@@ -169,20 +173,30 @@ app.post("/flow-requests", async (c) => {
   const existing = await db("flow_requests").where("name", name).first();
 
   if (existing) {
+    const encryptedData = await encryptFlowBlobForJsonb(body || {});
+    const encryptedFlow = body?.flow
+      ? await encryptFlowBlobForJsonb(body.flow)
+      : existing.flow == null
+      ? null
+      : encodeJsonbValue(existing.flow);
     await db("flow_requests").where("id", existing.id).update({
-      data: JSON.stringify(body || {}),
-      flow: body?.flow ? JSON.stringify(body.flow) : existing.flow,
+      data: encryptedData,
+      flow: encryptedFlow,
       description: body?.description || existing.description,
       schema: body?.schema ? JSON.stringify(body.schema) : existing.schema,
     });
     return c.json({ id: existing.id, updated: true }, 200);
   }
 
+  const encryptedData = await encryptFlowBlobForJsonb(body || {});
+  const encryptedFlow = body?.flow
+    ? await encryptFlowBlobForJsonb(body.flow)
+    : null;
   const result = await db("flow_requests")
     .insert({
       name,
-      data: JSON.stringify(body || {}),
-      flow: body?.flow ? JSON.stringify(body.flow) : null,
+      data: encryptedData,
+      flow: encryptedFlow,
       description: body?.description || null,
       schema: JSON.stringify(body?.schema || []),
     })
@@ -326,7 +340,7 @@ app.post("/forms-submit/:formId", async (c) => {
     .first();
   if (!flowRequest) return c.json({ error: "linked flow request not found" }, 404);
 
-  const flowData = getFlowRequestExecutionData(flowRequest);
+  const flowData = await getFlowRequestExecutionData(flowRequest);
   const requestHeaders = Object.fromEntries(c.req.raw.headers.entries());
   const requestQuery = Object.fromEntries(new URL(c.req.url).searchParams);
 
@@ -732,7 +746,7 @@ app.post("/webhooks/:id_flow_request/run", async (c) => {
   const requestBody = await c.req.json().catch(() => ({}));
   const requestQuery = Object.fromEntries(new URL(c.req.url).searchParams);
 
-  const flowData = getFlowRequestExecutionData(flowRequest);
+  const flowData = await getFlowRequestExecutionData(flowRequest);
   const workflowEngine = await run(
     requestHeaders,
     requestBody,

@@ -104,7 +104,7 @@ export async function startScheduler() {
         return;
       }
 
-      const flowData = getFlowRequestExecutionData(flowRequest);
+      const flowData = await getFlowRequestExecutionData(flowRequest);
       await run({}, {}, {}, flowData.plugins, flowData.flow, flowRequestId, flowRequest.name ?? null);
     },
     queueOptions,

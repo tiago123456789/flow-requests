@@ -85,7 +85,7 @@ export async function syncMcpFlowTools(
       console.log("@@@@@@@@@@@@@@@@@@@@")
       console.log("@@@@@@@@@@@@@@@@@@@@")
 
-      const flowData = getFlowRequestExecutionData(flowRequest);
+      const flowData = await getFlowRequestExecutionData(flowRequest);
       const workflowEngine = await run(
         body || {},
         body || {},
